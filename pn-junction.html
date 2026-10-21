@@ -1,0 +1,4588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PN 结的微观物理图像 · 载流子、耗尽区与费米能级</title>
+<style>
+:root{
+  --bg:#080b10;
+  --bg2:#0d1219;
+  --panel:#101821;
+  --panel2:#131d28;
+  --line:#1f2c3a;
+  --line2:#2a3a4c;
+  --txt:#dde6ef;
+  --txt2:#a8b8c8;
+  --muted:#7c8ea1;
+  --cyan:#4fc3f7;
+  --cyan-d:#1f7fa8;
+  --blue:#6aa9ff;
+  --coral:#ff8a72;
+  --amber:#ffc857;
+  --green:#5ee0a0;
+  --violet:#b18cff;
+  --mono:ui-monospace,"SFMono-Regular","Cascadia Mono","Consolas","Liberation Mono",monospace;
+  --serif:"Cambria","Georgia","Times New Roman","Songti SC",serif;
+  --sans:"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei","Source Han Sans SC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1200px 700px at 78% -10%, rgba(30,110,160,.16), transparent 62%),
+    radial-gradient(900px 600px at 8% 8%, rgba(90,70,180,.10), transparent 60%),
+    var(--bg);
+  color:var(--txt);
+  font-family:var(--sans);
+  font-size:16.5px;
+  line-height:1.9;
+  letter-spacing:.012em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+::selection{background:rgba(79,195,247,.28);color:#fff}
+
+/* ---------- 顶部进度条 ---------- */
+#progress{
+  position:fixed;top:0;left:0;height:2px;width:100%;
+  background:transparent;z-index:100;
+}
+#progress > i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--violet));
+  box-shadow:0 0 12px rgba(79,195,247,.6);
+  transition:width .08s linear;
+}
+
+/* ---------- 布局 ---------- */
+.shell{
+  display:grid;
+  grid-template-columns:268px minmax(0,1fr);
+  gap:0;
+  max-width:1500px;
+  margin:0 auto;
+}
+nav.toc{
+  position:sticky;top:0;height:100vh;
+  padding:44px 26px 40px 40px;
+  border-right:1px solid var(--line);
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+nav.toc .brand{
+  font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px;font-weight:600;
+}
+nav.toc .brand-title{
+  font-size:1.02rem;color:var(--txt);font-weight:600;letter-spacing:.02em;
+  line-height:1.5;margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--line);
+}
+nav.toc ol{list-style:none;counter-reset:toc}
+nav.toc li{counter-increment:toc;margin:0}
+nav.toc a{
+  display:flex;gap:12px;align-items:baseline;
+  padding:7px 10px;margin-left:-10px;border-radius:7px;
+  color:var(--txt2);text-decoration:none;font-size:.885rem;line-height:1.55;
+  transition:color .18s,background .18s;
+}
+nav.toc a::before{
+  content:counter(toc,decimal-leading-zero);
+  font-family:var(--mono);font-size:.7rem;color:#4b5c6e;
+  transition:color .18s;flex:0 0 auto;
+}
+nav.toc a:hover{color:var(--txt);background:rgba(255,255,255,.035)}
+nav.toc a.active{color:var(--cyan);background:rgba(79,195,247,.07)}
+nav.toc a.active::before{color:var(--cyan)}
+nav.toc .note{
+  margin-top:26px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:.74rem;color:#5f7186;line-height:1.7;
+}
+
+main{padding:0 64px 140px;max-width:1000px;width:100%}
+
+/* ---------- 封面 ---------- */
+header.hero{padding:96px 0 64px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.hero .kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:26px;
+}
+.hero .kicker::before{content:"";width:26px;height:1px;background:var(--cyan);display:block}
+.hero h1{
+  font-size:clamp(2.1rem,3.4vw,3.05rem);
+  line-height:1.32;font-weight:700;letter-spacing:-.01em;
+  background:linear-gradient(96deg,#ffffff 8%,#b9e6fb 46%,#8fb8e8 92%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin-bottom:8px;
+}
+.hero h1 em{font-style:normal;color:var(--amber);-webkit-text-fill-color:var(--amber)}
+.hero .sub{
+  font-size:1.12rem;color:var(--txt2);margin:14px 0 30px;max-width:44em;line-height:1.8;
+}
+.hero .sub b{color:var(--txt);font-weight:600}
+.hero .meta{
+  display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:6px;
+}
+.hero .meta span{
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;
+  color:var(--muted);border:1px solid var(--line2);border-radius:999px;
+  padding:4px 13px;background:rgba(255,255,255,.018);
+}
+.roadmap{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:1px;margin:46px 0 0;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+}
+.roadmap a{
+  display:block;padding:20px 20px 22px;background:var(--bg2);
+  text-decoration:none;transition:background .2s;
+}
+.roadmap a:hover{background:#111a24}
+.roadmap .n{font-family:var(--mono);font-size:.7rem;color:var(--cyan);letter-spacing:.14em}
+.roadmap .t{color:var(--txt);font-weight:600;font-size:.94rem;margin:7px 0 5px;line-height:1.5}
+.roadmap .d{color:var(--muted);font-size:.79rem;line-height:1.6}
+
+/* ---------- 章节 ---------- */
+section.chapter{padding:72px 0 8px;scroll-margin-top:0}
+.ch-head{display:flex;align-items:flex-start;gap:20px;margin-bottom:26px}
+.ch-num{
+  font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.1em;
+  color:var(--cyan);padding-top:11px;flex:0 0 auto;
+  border-top:1px solid var(--cyan-d);margin-top:14px;
+}
+.ch-head h2{
+  font-size:1.72rem;font-weight:700;line-height:1.45;letter-spacing:-.005em;
+  color:#f2f7fb;
+}
+h3{
+  font-size:1.13rem;font-weight:650;color:#e8f1f8;
+  margin:46px 0 14px;padding-left:14px;position:relative;line-height:1.6;
+}
+h3::before{
+  content:"";position:absolute;left:0;top:.52em;width:4px;height:.92em;
+  background:linear-gradient(180deg,var(--cyan),rgba(79,195,247,.15));border-radius:2px;
+}
+h4{font-size:.98rem;font-weight:650;color:var(--txt);margin:26px 0 8px}
+p{margin:14px 0;color:var(--txt2)}
+p.lead{font-size:1.045rem;color:#c4d2df;line-height:1.92}
+strong,b{color:#eaf3fa;font-weight:650}
+em{font-style:normal;color:var(--amber)}
+a.ref{color:var(--cyan);text-decoration:none;border-bottom:1px dotted rgba(79,195,247,.45)}
+code{
+  font-family:var(--mono);font-size:.86em;background:rgba(120,170,220,.10);
+  border:1px solid rgba(120,170,220,.14);border-radius:4px;padding:1px 6px;color:#a9d8f5;
+}
+mark{
+  background:linear-gradient(180deg,transparent 58%,rgba(255,200,87,.22) 58%);
+  color:#ffe1a3;padding:0 2px;
+}
+ul,ol{margin:14px 0 14px 4px;padding-left:22px;color:var(--txt2)}
+li{margin:8px 0;line-height:1.86}
+li::marker{color:var(--cyan-d)}
+ul.tight li,ol.tight li{margin:4px 0}
+hr.sep{border:none;border-top:1px solid var(--line);margin:56px 0 0}
+
+/* ---------- 公式 ---------- */
+.eq{
+  position:relative;
+  margin:24px 0;padding:20px 26px;
+  background:linear-gradient(100deg,rgba(30,86,124,.16),rgba(30,86,124,.05) 55%,transparent);
+  border-left:2px solid var(--cyan-d);
+  border-radius:0 10px 10px 0;
+  font-family:var(--serif);font-size:1.1rem;line-height:2.2;
+  color:#e6f2fa;overflow-x:auto;overflow-y:hidden;
+}
+.eq i{font-style:italic;color:#d7ecfa}
+.eq sub,.eq sup{font-size:.66em}
+.eq .tag{
+  position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:.72rem;color:#4f6577;letter-spacing:.06em;
+}
+.eq .note-inline{font-family:var(--sans);font-size:.84rem;color:var(--muted);font-style:normal}
+.frac{
+  display:inline-flex;flex-direction:column;vertical-align:-0.62em;
+  text-align:center;margin:0 .3em;font-size:.94em;line-height:1.45;
+}
+.frac > span:first-child{border-bottom:1px solid rgba(220,235,245,.45);padding:0 .38em 2px}
+.frac > span:last-child{padding:2px .38em 0}
+.sym{font-family:var(--serif);font-style:italic;color:#d7ecfa}
+
+/* ---------- 卡片 / 提示 ---------- */
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px 28px;margin:26px 0;
+}
+.card h4{margin-top:0;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.card h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);flex:0 0 auto}
+.card p:last-child{margin-bottom:0}
+.card ul:last-child{margin-bottom:0}
+
+.callout{
+  border:1px solid var(--line2);border-left:3px solid var(--amber);
+  background:linear-gradient(100deg,rgba(255,200,87,.055),transparent 70%);
+  border-radius:0 10px 10px 0;padding:20px 26px;margin:28px 0;
+}
+.callout .lab{
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);
+  font-family:var(--mono);margin-bottom:8px;display:block;
+}
+.callout p{margin:8px 0;color:#cbd8e4}
+.callout p:last-child{margin-bottom:0}
+.callout.deep{
+  border-left-color:var(--violet);
+  background:linear-gradient(100deg,rgba(177,140,255,.06),transparent 70%);
+}
+.callout.deep .lab{color:var(--violet)}
+.callout.warn{
+  border-left-color:var(--coral);
+  background:linear-gradient(100deg,rgba(255,138,114,.06),transparent 70%);
+}
+.callout.warn .lab{color:var(--coral)}
+
+/* ---------- 表格 ---------- */
+.tbl-wrap{margin:26px 0;overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.885rem;min-width:520px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line);line-height:1.65}
+thead th{
+  background:rgba(120,170,220,.055);color:#bcd2e2;font-weight:600;
+  font-size:.79rem;letter-spacing:.06em;
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.018)}
+td.num,th.num{font-family:var(--mono);font-size:.83rem;color:#cfe3f2;text-align:right;white-space:nowrap}
+td.k{color:#e6f1f9;font-weight:550}
+caption{caption-side:bottom;padding-top:12px;font-size:.78rem;color:var(--muted);text-align:left}
+
+/* ---------- 图 ---------- */
+figure{
+  margin:36px 0;padding:22px 22px 8px;
+  background:linear-gradient(180deg,#0c141c,#0a1017);
+  border:1px solid var(--line);border-radius:14px;
+}
+figure svg{display:block;width:100%;height:auto}
+figcaption{
+  margin-top:16px;padding:14px 4px 10px;border-top:1px solid var(--line);
+  font-size:.815rem;color:var(--muted);line-height:1.75;
+}
+figcaption b{color:#bfd3e3;font-weight:600}
+figcaption .fno{
+  font-family:var(--mono);color:var(--cyan);font-size:.75rem;letter-spacing:.08em;
+  margin-right:8px;
+}
+
+/* SVG 通用 */
+.svgtxt{font-family:var(--sans);fill:#93a7b9;font-size:13px}
+.svgtxt.sm{font-size:11.5px}
+.svgtxt.lg{font-size:14.5px}
+.svgtxt.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}
+.svgtxt.it{font-family:var(--serif);font-style:italic;font-size:15px}
+.svgtxt.hi{fill:#dceaf5}
+.axisline{stroke:#2b3c4d;stroke-width:1}
+.gridline{stroke:#1b2836;stroke-width:1;stroke-dasharray:2 4}
+.extline{stroke:#55697c;stroke-width:1;stroke-dasharray:4 4}
+
+/* ---------- 交互面板 ---------- */
+.control{
+  margin:30px 0;padding:26px 28px 22px;
+  background:linear-gradient(180deg,#0e1720,#0b1219);
+  border:1px solid var(--line2);border-radius:14px;
+}
+.control .ctl-head{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;justify-content:space-between;
+  margin-bottom:18px;
+}
+.control .ctl-title{font-size:.95rem;font-weight:650;color:#e9f3fa}
+.control .ctl-title span{color:var(--muted);font-weight:400;font-size:.83rem;margin-left:10px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(255,138,114,.55),rgba(90,110,130,.35) 38%,rgba(79,195,247,.65));
+  outline:none;cursor:pointer;margin:6px 0 2px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+  background:#eaf6ff;border:3px solid var(--cyan);
+  box-shadow:0 0 0 5px rgba(79,195,247,.16),0 2px 8px rgba(0,0,0,.6);
+}
+input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;background:#eaf6ff;border:3px solid var(--cyan);
+  box-shadow:0 0 0 5px rgba(79,195,247,.16);
+}
+.scale-row{
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:.7rem;color:#5c6f82;margin-top:2px;
+}
+.readouts{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;margin-top:20px;
+}
+.readouts div{background:#0c141c;padding:14px 16px}
+.readouts .rl{font-size:.71rem;color:var(--muted);letter-spacing:.04em;margin-bottom:5px;line-height:1.4}
+.readouts .rv{font-family:var(--mono);font-size:.95rem;color:var(--cyan);letter-spacing:-.01em}
+.readouts .rv.amber{color:var(--amber)}
+.readouts .rv.coral{color:var(--coral)}
+.readouts .rv.green{color:var(--green)}
+.readouts .rv small{font-size:.72rem;color:var(--muted);margin-left:4px}
+
+/* ---------- 2D NPN 模型 ---------- */
+.npn-panel{
+  margin:32px 0 10px;border:1px solid var(--line2);border-radius:14px;
+  overflow:hidden;background:linear-gradient(180deg,#0b131b,#080e14);
+  box-shadow:0 18px 46px -28px rgba(0,0,0,.9);
+}
+.npn-bar{
+  padding:13px 18px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.005));
+}
+.npn-row1{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.npn-slide{
+  display:flex;align-items:center;gap:12px;
+  margin-top:11px;padding-top:11px;border-top:1px dashed var(--line2);
+}
+.npn-slide .lab{font-size:.72rem;color:#6d8296;white-space:nowrap;letter-spacing:.05em;flex:0 0 auto}
+.npn-slide input[type=range]{flex:1;margin:0}
+.npn-slide .val{
+  font-family:var(--mono);font-size:.78rem;color:var(--cyan);
+  min-width:96px;text-align:right;flex:0 0 auto;
+}
+.npn-modes{display:flex;gap:7px;flex-wrap:wrap}
+.npn-modes button{
+  font-family:var(--sans);font-size:.795rem;letter-spacing:.01em;color:var(--txt2);
+  background:rgba(255,255,255,.028);border:1px solid var(--line2);
+  padding:7px 15px;border-radius:8px;cursor:pointer;
+  transition:color .16s,background .16s,border-color .16s;
+}
+.npn-modes button:hover{color:var(--txt);border-color:#3d5568;background:rgba(255,255,255,.05)}
+.npn-modes button.on{
+  color:#06121a;background:var(--cyan);border-color:var(--cyan);font-weight:650;
+  box-shadow:0 0 0 3px rgba(79,195,247,.14);
+}
+.npn-modes #npnPause{
+  margin-left:8px;border-style:dashed;color:#7d93a8;
+}
+.npn-modes #npnPause.on{color:#ffc857;border-color:#6b5626;background:rgba(255,200,87,.08);font-weight:500}
+.npn-sep{width:1px;height:18px;background:var(--line2);margin:0 5px;flex:0 0 auto;align-self:center}
+.npn-grouplab{font-size:.68rem;color:#5f7186;letter-spacing:.05em;white-space:nowrap;margin-right:2px}
+.npn-hint{
+  font-family:var(--mono);font-size:.715rem;color:#6d8296;letter-spacing:.03em;
+}
+.npn-panel canvas{display:block;width:100%;height:auto}
+.control canvas{display:block;width:100%;height:auto;margin:10px 0 4px}
+.npn-legend{
+  display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;
+  padding:12px 18px;border-top:1px solid var(--line);
+  font-size:.755rem;color:var(--muted);
+}
+.npn-legend span{display:inline-flex;align-items:center;white-space:nowrap}
+.npn-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;flex:0 0 auto}
+.npn-legend .sw-e{background:#5aa9ff}
+.npn-legend .sw-h{border:2px solid #ff8a72;width:8px;height:8px}
+.npn-legend .sw-r{background:#ffc857}
+.npn-legend .sw-c{background:#5ee0a0}
+.npn-legend .sw-i{background:#ffcb66;box-shadow:0 0 6px rgba(255,203,102,.7)}
+.npn-legend-note{
+  margin-left:auto;font-family:var(--mono);font-size:.68rem;color:#4f6273;letter-spacing:.03em;
+}
+.npn-readouts{border-top:1px solid var(--line);border-radius:0;margin:0;background:var(--line)}
+.npn-readouts > div{background:#0a1119;padding:13px 16px}
+.npn-profile{
+  border-top:1px solid var(--line);padding:8px 0 4px;
+  background:linear-gradient(180deg,#080e14,#060a0f);
+}
+.npn-profile canvas{display:block;width:100%;height:auto}
+.npn-cap{
+  margin:16px 0 0;padding-left:2px;font-size:.815rem;color:var(--muted);line-height:1.78;
+}
+.npn-cap .fno{
+  font-family:var(--mono);color:var(--cyan);font-size:.75rem;letter-spacing:.08em;margin-right:8px;
+}
+.npn-cap b{color:#bfd3e3;font-weight:600}
+@media(max-width:700px){
+  .npn-legend-note{margin-left:0}
+  .npn-bar{padding:11px 13px}
+  .npn-readouts > div{padding:11px 12px}
+}
+
+/* ---------- 要点总结 ---------- */
+.keypoints{counter-reset:kp;list-style:none;padding:0;margin:30px 0}
+.keypoints li{
+  counter-increment:kp;position:relative;padding:18px 22px 18px 62px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:12px 0;
+  color:#c9d7e3;
+}
+.keypoints li::before{
+  content:counter(kp,decimal-leading-zero);
+  position:absolute;left:22px;top:18px;
+  font-family:var(--mono);font-size:.76rem;color:var(--cyan);letter-spacing:.06em;
+}
+.keypoints li b{color:#eaf3fa}
+
+/* ---------- 页脚 ---------- */
+footer{
+  margin-top:80px;padding-top:34px;border-top:1px solid var(--line);
+  color:#5f7186;font-size:.8rem;line-height:1.8;
+}
+footer .fnote{margin-top:8px}
+
+/* ---------- 动画 ---------- */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:1080px){
+  .shell{grid-template-columns:1fr}
+  nav.toc{display:none}
+  main{padding:0 26px 100px;margin:0 auto}
+  header.hero{padding:64px 0 48px}
+  .eq{font-size:1rem;padding:16px 18px}
+  section.chapter{padding:54px 0 6px}
+}
+@media(max-width:560px){
+  body{font-size:15.5px}
+  main{padding:0 18px 80px}
+  .hero h1{font-size:1.72rem}
+  figure{padding:14px 12px 6px}
+  .eq .tag{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1!important;transform:none!important;transition:none!important}
+}
+@media print{
+  body{background:#fff;color:#111}
+  nav.toc,#progress{display:none}
+  .shell{grid-template-columns:1fr}
+  main{max-width:none;padding:0}
+  .reveal{opacity:1!important;transform:none!important}
+  figure,.card,.callout,.control,.tbl-wrap{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div id="progress"><i></i></div>
+
+<div class="shell">
+<nav class="toc">
+  <div class="brand">Solid-State Physics</div>
+  <div class="brand-title">PN 结的<br>微观物理图像</div>
+  <ol>
+    <li><a href="#s1">载流子从哪里来</a></li>
+    <li><a href="#s2">产生与复合</a></li>
+    <li><a href="#s3">费米能级</a></li>
+    <li><a href="#s4">结的形成</a></li>
+    <li><a href="#s5">定量描述</a></li>
+    <li><a href="#s6">平衡态全景</a></li>
+    <li><a href="#s7">少子与多子</a></li>
+    <li><a href="#s8">肖克利方程</a></li>
+    <li><a href="#s9">二维 NPN 模型</a></li>
+    <li><a href="#s10">四个非理想效应</a></li>
+    <li><a href="#s11">常见误解</a></li>
+    <li><a href="#s12">要点总结</a></li>
+  </ol>
+  <div class="note">
+    全页数值取自同一组自洽参数：<br>
+    T = 300 K，E<sub>g</sub> = 1.10 eV，<br>
+    N<sub>c</sub> = 2.8×10<sup>19</sup>，N<sub>v</sub> = 1.04×10<sup>19</sup> cm<sup>−3</sup>，<br>
+    n<sub>i</sub> = 1.0×10<sup>10</sup> cm<sup>−3</sup>，<br>
+    N<sub>A</sub> = N<sub>D</sub> = 1×10<sup>16</sup> cm<sup>−3</sup>。
+  </div>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="kicker">Microscopic Picture · PN Junction</div>
+  <h1>PN 结：一场关于<br><em>载流子</em>的静力学平衡</h1>
+  <p class="sub">
+    所有器件行为——整流、势垒电容、反向饱和电流、温度系数——都可以归结为一个微观事实：
+    在<b>浓度梯度</b>、<b>电场力</b>与<b>复合过程</b>这三者之间，载流子如何重新分配自己。
+    本文从单个电子与空穴的产生、行走与消失讲起，一路推到能带图上的费米能级。
+  </p>
+  <div class="meta">
+    <span>热平衡与准平衡</span>
+    <span>扩散 ↔ 漂移</span>
+    <span>耗尽近似</span>
+    <span>准费米能级</span>
+    <span>Shockley 方程</span>
+  </div>
+
+  <div class="roadmap">
+    <a href="#s1"><div class="n">01</div><div class="t">载流子的来源</div><div class="d">本征激发、掺杂与质量作用定律</div></a>
+    <a href="#s2"><div class="n">02</div><div class="t">产生与复合</div><div class="d">辐射、SRH、俄歇；寿命与扩散长度</div></a>
+    <a href="#s3"><div class="n">03</div><div class="t">费米能级</div><div class="d">化学势水位与"处处水平"的判据</div></a>
+    <a href="#s4"><div class="n">04</div><div class="t">结的形成</div><div class="d">扩散、空间电荷、内建电场的三方平衡</div></a>
+    <a href="#s6"><div class="n">06</div><div class="t">平衡态全景</div><div class="d">能带图与载流子浓度的对数分布</div></a>
+    <a href="#s7"><div class="n">07</div><div class="t">少子与多子</div><div class="d">准费米能级的分裂（可交互）</div></a>
+    <a href="#s9"><div class="n">09</div><div class="t">二维 NPN 模型</div><div class="d">粒子级仿真：注入→扩散→复合→扫出</div></a>
+    <a href="#s10"><div class="n">10</div><div class="t">四个非理想效应</div><div class="d">集边、Kirk、厄利、穿通</div></a>
+  </div>
+</header>
+
+<!-- ============================ §1 ============================ -->
+<section class="chapter" id="s1">
+  <div class="ch-head">
+    <div class="ch-num">01</div>
+    <h2>载流子从哪里来：本征激发与掺杂</h2>
+  </div>
+
+  <p class="lead">
+    半导体的全部用处，来自它的载流子浓度可以被外部条件在十几个数量级的范围内调节。
+    PN 结做的事情，是把这种可调性<strong>固化进一个空间结构</strong>：在同一块晶体的两侧，
+    一边富电子，一边富空穴。要理解这个结构，先要理解两种载流子各自的"户口"。
+  </p>
+
+  <h3>1.1 本征激发：成对产生的电子与空穴</h3>
+
+  <p>
+    绝对零度下，价带被填满、导带完全空着，晶体不导电。温度升高后，一部分价带电子获得
+    足以跨越禁带的热能（≥ <span class="sym">E</span><sub>g</sub>），跃迁到导带，同时在价带中留下一个
+    空缺——空穴。这两个载流子<strong>成对出现、数量恒等</strong>：<span class="sym">n</span> = <span class="sym">p</span>。
+  </p>
+
+  <p>
+    单位体积、单位时间的产生率对温度极其敏感，本质上是一个玻尔兹曼因子：
+  </p>
+
+  <div class="eq">
+    <i>G</i><sub>0</sub> ∝ <i>T</i><sup>3</sup> exp&#8203;( −<span class="frac"><span><i>E</i><sub>g</sub></span><span><i>kT</i></span></span> )
+    <span class="tag">1.1</span>
+  </div>
+
+  <p>
+    与此同时，导带里的电子会不断落回价带与空穴复合。复合是<strong>双体过程</strong>——必须有一个电子
+    和一个空穴同时在场，因此复合率正比于两者的浓度乘积：
+  </p>
+
+  <div class="eq">
+    <i>R</i> = <i>β n p</i>
+    <span class="tag">1.2</span>
+  </div>
+
+  <p>
+    热平衡时产生与复合严格抵消（细致平衡），<span class="sym">G</span><sub>0</sub> = <span class="sym">R</span>，于是产物被锁定为一个只与温度有关的常数：
+  </p>
+
+  <div class="eq">
+    <i>n</i><sub>0</sub><i>p</i><sub>0</sub> = <i>n</i><sub>i</sub><sup>2</sup> =
+    <i>N</i><sub>c</sub><i>N</i><sub>v</sub> exp&#8203;( −<span class="frac"><span><i>E</i><sub>g</sub></span><span><i>kT</i></span></span> )
+    <span class="tag">1.3 · 质量作用定律</span>
+  </div>
+
+  <p>
+    式 1.3 看似平淡，却是整篇文章的支点。<mark>它说的是"乘积固定"，而不是"各自固定"</mark>：
+    你可以把电子浓度抬高十个数量级，空穴浓度就会相应地压低十个数量级，乘积纹丝不动。
+    PN 结的全部非平衡行为，都是在这一约束下展开的。
+  </p>
+
+  <h3>1.2 掺杂：把一种载流子变成"多数"</h3>
+
+  <p>
+    在硅中掺入五价元素（磷、砷），施主原子在禁带中靠近导带处引入浅能级，室温下几乎全部电离，
+    向晶格贡献一个自由电子；掺入三价元素（硼），受主在靠近价带处引入浅能级，贡献一个空穴。
+    电离后的杂质离子被固定在晶格上，<strong>不能移动</strong>——这一点在后面会变得至关重要。
+  </p>
+
+  <p>
+    n 型材料的电中性条件是"负电荷总量 = 正电荷总量"：电子数与电离受主数之和，等于电离施主数。
+    在完全电离、且 <span class="sym">N</span><sub>D</sub> ≫ <span class="sym">n</span><sub>i</sub> 的常态下，电子浓度几乎精确等于施主浓度：
+  </p>
+
+  <div class="eq">
+    <i>n</i><sub>n0</sub> ≈ <i>N</i><sub>D</sub>，&nbsp;&nbsp;&nbsp;
+    <i>p</i><sub>n0</sub> = <span class="frac"><span><i>n</i><sub>i</sub><sup>2</sup></span><span><i>N</i><sub>D</sub></span></span>
+    <span class="tag">1.4</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 1 · 同一温度下三种材料的载流子构成（n<sub>i</sub> = 1.0×10<sup>10</sup> cm<sup>−3</sup>）</caption>
+      <thead>
+        <tr><th>材料</th><th class="num">多子浓度</th><th class="num">少子浓度</th><th>费米能级位置</th><th>导电靠谁</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="k">本征</td><td class="num">1.0×10<sup>10</sup></td><td class="num">1.0×10<sup>10</sup></td><td>禁带中央 E<sub>i</sub></td><td>电子与空穴各半</td></tr>
+        <tr><td class="k">n 型（N<sub>D</sub>=10<sup>16</sup>）</td><td class="num">1.0×10<sup>16</sup> 电子</td><td class="num">1.0×10<sup>4</sup> 空穴</td><td>靠近 E<sub>c</sub>，差 0.205 eV</td><td>电子</td></tr>
+        <tr><td class="k">p 型（N<sub>A</sub>=10<sup>16</sup>）</td><td class="num">1.0×10<sup>16</sup> 空穴</td><td class="num">1.0×10<sup>4</sup> 电子</td><td>靠近 E<sub>v</sub>，差 0.180 eV</td><td>空穴</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h4><span class="dot"></span>关键洞察：少子浓度是"被锁定"的量</h4>
+    <p>
+      掺杂从 10<sup>15</sup> 增加到 10<sup>17</sup>，多子浓度只变 100 倍，少子浓度却变化 <strong>10 000 倍</strong>——
+      因为它按 1/<span class="sym">N</span> 反比下降。这意味着少子浓度对任何能够扰动 <span class="sym">np</span> 乘积的因素
+      （温度、光照、外加偏压）都呈现<strong>指数级敏感</strong>。
+    </p>
+    <p>
+      器件物理中几乎所有"有趣"的现象，都发生在少子身上。多子只是背景，少子才是主角。
+    </p>
+  </div>
+</section>
+
+<!-- ============================ §2 ============================ -->
+<section class="chapter" id="s2">
+  <div class="ch-head">
+    <div class="ch-num">02</div>
+    <h2>产生与复合：微观过程的收支平衡</h2>
+  </div>
+
+  <p class="lead">
+    载流子不是永恒存在的。它们有明确的"出生"途径和"死亡"途径，而器件的工作点，
+    本质上就是这两条通道的流量之比。
+  </p>
+
+  <h3>2.1 产生：载流子的三种出生方式</h3>
+
+  <ul>
+    <li><strong>本征热激发</strong>——晶格振动把能量传递给价带电子，使其跨越禁带。产生率随温度按 exp(−<span class="sym">E</span><sub>g</sub>/<span class="sym">kT</span>) 上升，是唯一在暗处、无偏压时依然存在的产生机制。</li>
+    <li><strong>杂质电离</strong>——浅能级上的载流子被热激发到导带（或价带）。室温下通常已全部电离，之后不再贡献新的产生。</li>
+    <li><strong>外部激发</strong>——光子的能量注入（光生载流子），或由外部电路通过电极注入（电注入）。正向偏置的 PN 结正是靠这一机制维持非平衡态。</li>
+  </ul>
+
+  <h3>2.2 复合：三条竞争通道</h3>
+
+  <p>
+    复合必须同时满足能量守恒与动量守恒，因此不同材料、不同工作条件下占主导的机制并不相同。
+    下图把四种主要路径画在同一张能带图上：
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 880 420" role="img" aria-label="半导体中产生与复合的四条微观路径">
+      <defs>
+        <marker id="arUp" markerWidth="9" markerHeight="9" refX="4.5" refY="8" orient="auto">
+          <path d="M0,8 L4.5,0 L9,8" fill="none" stroke="#6aa9ff" stroke-width="1.6" stroke-linecap="round"/>
+        </marker>
+        <marker id="arDn" markerWidth="9" markerHeight="9" refX="4.5" refY="1" orient="auto">
+          <path d="M0,0 L4.5,8 L9,0" fill="none" stroke="#ff8a72" stroke-width="1.6" stroke-linecap="round"/>
+        </marker>
+        <marker id="arDnG" markerWidth="9" markerHeight="9" refX="4.5" refY="1" orient="auto">
+          <path d="M0,0 L4.5,8 L9,0" fill="none" stroke="#5ee0a0" stroke-width="1.6" stroke-linecap="round"/>
+        </marker>
+        <linearGradient id="gapFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#12202c"/>
+          <stop offset="100%" stop-color="#0d1720"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 禁带 -->
+      <rect x="70" y="92" width="740" height="228" fill="url(#gapFill)"/>
+      <!-- 能带 -->
+      <line x1="70" y1="92" x2="810" y2="92" stroke="#6aa9ff" stroke-width="2.4"/>
+      <line x1="70" y1="320" x2="810" y2="320" stroke="#ff8a72" stroke-width="2.4"/>
+      <text class="svgtxt it" x="30" y="97" fill="#8fbcff">E<tspan font-size="11" dy="4">c</tspan></text>
+      <text class="svgtxt it" x="30" y="325" fill="#ffa994">E<tspan font-size="11" dy="4">v</tspan></text>
+
+      <!-- 分区竖线 -->
+      <line x1="258" y1="60" x2="258" y2="352" stroke="#1f2c3a" stroke-width="1"/>
+      <line x1="452" y1="60" x2="452" y2="352" stroke="#1f2c3a" stroke-width="1"/>
+      <line x1="646" y1="60" x2="646" y2="352" stroke="#1f2c3a" stroke-width="1"/>
+
+      <!-- ① 热产生 -->
+      <line x1="160" y1="312" x2="160" y2="104" stroke="#6aa9ff" stroke-width="1.8" marker-end="url(#arUp)"/>
+      <circle cx="160" cy="104" r="4.5" fill="#6aa9ff"/>
+      <circle cx="160" cy="312" r="4.5" fill="none" stroke="#ff8a72" stroke-width="1.8"/>
+      <text class="svgtxt sm" x="172" y="150" fill="#9fc4ee">热激发</text>
+      <text class="svgtxt sm" x="172" y="168" fill="#7d93a8">E<tspan font-size="10" dy="3">ph</tspan><tspan dy="-3"> ≈ E</tspan><tspan font-size="10" dy="3">g</tspan></text>
+
+      <!-- ② 辐射复合 -->
+      <line x1="352" y1="104" x2="352" y2="308" stroke="#ff8a72" stroke-width="1.8" marker-end="url(#arDn)"/>
+      <circle cx="352" cy="104" r="4.5" fill="#6aa9ff"/>
+      <circle cx="352" cy="312" r="4.5" fill="none" stroke="#ff8a72" stroke-width="1.8"/>
+      <path d="M366,196 q10,-12 20,0 q10,12 20,0" fill="none" stroke="#ffc857" stroke-width="1.7"/>
+      <text class="svgtxt sm" x="410" y="196" fill="#ffc857">hν</text>
+      <text class="svgtxt sm" x="300" y="345" fill="#7d93a8">带间辐射复合</text>
+
+      <!-- ③ SRH -->
+      <line x1="500" y1="92" x2="600" y2="92" stroke="none"/>
+      <line x1="500" y1="206" x2="600" y2="206" stroke="#4f6577" stroke-width="1" stroke-dasharray="5 5"/>
+      <line x1="550" y1="104" x2="550" y2="196" stroke="#5ee0a0" stroke-width="1.8" marker-end="url(#arDnG)"/>
+      <circle cx="550" cy="104" r="4.5" fill="#6aa9ff"/>
+      <circle cx="550" cy="206" r="4" fill="#2b3c4d" stroke="#5ee0a0" stroke-width="1.5"/>
+      <line x1="550" y1="214" x2="550" y2="306" stroke="#5ee0a0" stroke-width="1.8" marker-end="url(#arDnG)"/>
+      <circle cx="550" cy="312" r="4.5" fill="none" stroke="#ff8a72" stroke-width="1.8"/>
+      <text class="svgtxt sm" x="606" y="210" fill="#5ee0a0">E<tspan font-size="10" dy="3">t</tspan></text>
+      <text class="svgtxt sm" x="470" y="345" fill="#7d93a8">SRH 两步复合</text>
+      <text class="svgtxt sm" x="478" y="242" fill="#5b7185">经由深能级缺陷</text>
+
+      <!-- ④ 俄歇 -->
+      <line x1="700" y1="104" x2="700" y2="308" stroke="#ff8a72" stroke-width="1.8" marker-end="url(#arDn)"/>
+      <circle cx="700" cy="104" r="4.5" fill="#6aa9ff"/>
+      <circle cx="700" cy="312" r="4.5" fill="none" stroke="#ff8a72" stroke-width="1.8"/>
+      <line x1="742" y1="104" x2="742" y2="150" stroke="#b18cff" stroke-width="1.6" marker-end="url(#arUp)"/>
+      <circle cx="742" cy="104" r="4" fill="none" stroke="#b18cff" stroke-width="1.6"/>
+      <text class="svgtxt sm" x="700" y="345" fill="#7d93a8">俄歇复合</text>
+      <text class="svgtxt sm" x="676" y="200" fill="#8e7bbd">能量交给第三个载流子</text>
+
+      <!-- 标题 -->
+      <text class="svgtxt mono" x="70" y="42" fill="#4f6577">四条路径 · 同一张能带图</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 1</span>
+      <b>产生与复合的微观路径。</b>①热激发成对产生电子-空穴；②导带电子直接落回价带，能量以光子形式释放（直接带隙材料中高效，硅中很弱）；
+      ③SRH 复合：电子先落入禁带中的缺陷能级 <span class="sym">E</span><sub>t</sub>，再落回价带，两步完成，是硅、锗中的主导机制；
+      ④俄歇复合：复合释放的能量交给第三个载流子，属三体过程，只在重掺杂或高注入时才显著。
+    </figcaption>
+  </figure>
+
+  <p>
+    在硅这种间接带隙材料中，导带底与价带顶的晶体动量不同，带间辐射复合需要声子参与，
+    概率极低（这也是硅无法做高效发光器件的原因）。因此<strong>硅中的复合几乎全部经由缺陷能级完成</strong>，
+    其速率由 Shockley–Read–Hall 公式给出：
+  </p>
+
+  <div class="eq">
+    <i>U</i> = <i>R</i> − <i>G</i> =
+    <span class="frac">
+      <span><i>pn</i> − <i>n</i><sub>i</sub><sup>2</sup></span>
+      <span><i>τ</i><sub>p</sub>(<i>n</i> + <i>n</i><sub>1</sub>) + <i>τ</i><sub>n</sub>(<i>p</i> + <i>p</i><sub>1</sub>)</span>
+    </span>
+    <span class="tag">2.1</span>
+  </div>
+
+  <p>
+    其中 <span class="sym">n</span><sub>1</sub>、<span class="sym">p</span><sub>1</sub> 是与缺陷能级位置有关的特征浓度。
+    这个式子的结构值得注意：<strong>分子就是偏离平衡的程度</strong>（<span class="sym">pn</span> − <span class="sym">n</span><sub>i</sub><sup>2</sup>）。
+    平衡时分子为零，净复合为零——这正是细致平衡的要求。
+  </p>
+
+  <p>
+    在<strong>低注入</strong>（少数载流子增量远小于多子浓度）条件下，式 2.1 退化为一个极其简洁的形式：
+    净复合率正比于少子的过剩量，
+  </p>
+
+  <div class="eq">
+    <i>U</i> ≈ <span class="frac"><span>Δ<i>n</i></span><span><i>τ</i></span></span>
+    &nbsp;&nbsp;<span class="note-inline">（低注入，<i>τ</i> 为少子寿命）</span>
+    <span class="tag">2.2</span>
+  </div>
+
+  <h3>2.3 寿命与扩散长度：少子的"人生半径"</h3>
+
+  <p>
+    少子在被复合掉之前，平均能存活 <span class="sym">τ</span> 的时间；在这段时间里它一边做热运动、
+    一边受浓度梯度驱动而扩散，平均能走出 <span class="sym">L</span> 的距离。两者通过扩散系数联系起来：
+  </p>
+
+  <div class="eq">
+    <i>L</i> = √&#8203;( <i>D τ</i> )
+    <span class="tag">2.3</span>
+  </div>
+
+  <p>
+    这个长度是 PN 结物理中最重要的空间尺度之一：<strong>它决定了"结"能影响到多远</strong>。
+    本页取 <span class="sym">D</span><sub>n</sub> = 35 cm²/s、<span class="sym">D</span><sub>p</sub> = 12.5 cm²/s、
+    <span class="sym">τ</span> = 1 μs，得到 <span class="sym">L</span><sub>n</sub> ≈ 59 μm、<span class="sym">L</span><sub>p</sub> ≈ 35 μm。
+    相比之下耗尽区宽度只有 0.43 μm——<mark>扩散长度比耗尽区宽两个数量级</mark>，
+    这意味着正偏时注入的少子会深入中性区很远才被复合掉，电流由这段"少子扩散区"决定，而不是由耗尽区本身决定。
+  </p>
+
+  <h3>2.4 连续性方程：把产生、复合、输运串起来</h3>
+
+  <p>
+    任何一点的载流子浓度变化，等于"流进来的减流出去的"加上"产生的减复合的"。对电子写出这一收支：
+  </p>
+
+  <div class="eq">
+    <span class="frac"><span>∂<i>n</i></span><span>∂<i>t</i></span></span>
+    = <span class="frac"><span>1</span><span><i>q</i></span></span>
+    <span class="frac"><span>∂<i>J</i><sub>n</sub></span><span>∂<i>x</i></span></span>
+    + <i>G</i><sub>n</sub> − <i>R</i><sub>n</sub>
+    <span class="tag">2.4</span>
+  </div>
+
+  <p>
+    稳态下左边为零。这条方程与泊松方程一起，构成求解任何半导体器件的完整方程组——
+    但在 PN 结这个问题上，我们不需要解完整的偏微分方程组，只需要抓住它的平衡态与准平衡态。
+  </p>
+</section>
+<!-- ============================ §3 ============================ -->
+<section class="chapter" id="s3">
+  <div class="ch-head">
+    <div class="ch-num">03</div>
+    <h2>费米能级：热平衡下的化学势水位</h2>
+  </div>
+
+  <p class="lead">
+    费米能级是整门课最容易被误读的概念。它不是"某个电子的能量"，而是一个统计参数——
+    描述的是<strong>整个电子系统在给定温度下的化学势</strong>。理解了这一点，
+    后面所有关于"能带弯曲"与"费米能级拉平"的图，都会变得不言自明。
+  </p>
+
+  <h3>3.1 从费米分布到载流子浓度</h3>
+
+  <p>
+    电子在能级 <span class="sym">E</span> 上的占据概率由费米–狄拉克分布给出：
+  </p>
+
+  <div class="eq">
+    <i>f</i>(<i>E</i>) =
+    <span class="frac">
+      <span>1</span>
+      <span>1 + exp&#8203;[ (<i>E</i> − <i>E</i><sub>F</sub>) / <i>kT</i> ]</span>
+    </span>
+    <span class="tag">3.1</span>
+  </div>
+
+  <p>
+    当 <span class="sym">E</span> = <span class="sym">E</span><sub>F</sub> 时 <span class="sym">f</span> = 1/2。
+    所以 <span class="sym">E</span><sub>F</sub> 的位置，就是"电子占据概率恰好一半"的能量位置。
+    当 <span class="sym">E</span> 比 <span class="sym">E</span><sub>F</sub> 高出几个 <span class="sym">kT</span> 时，
+    指数项主导分母，分布退化为玻尔兹曼尾巴：
+  </p>
+
+  <div class="eq">
+    <i>f</i>(<i>E</i>) ≈ exp&#8203;[ −(<i>E</i> − <i>E</i><sub>F</sub>) / <i>kT</i> ]
+    <span class="tag">3.2</span>
+  </div>
+
+  <p>
+    对导带底以上所有态求和（积分），便得到导带电子浓度；对价带顶以下求"空态"数，得到空穴浓度：
+  </p>
+
+  <div class="eq">
+    <i>n</i> = <i>N</i><sub>c</sub> exp&#8203;( −<span class="frac"><span><i>E</i><sub>c</sub> − <i>E</i><sub>F</sub></span><span><i>kT</i></span></span> )，
+    &nbsp;&nbsp;
+    <i>p</i> = <i>N</i><sub>v</sub> exp&#8203;( −<span class="frac"><span><i>E</i><sub>F</sub> − <i>E</i><sub>v</sub></span><span><i>kT</i></span></span> )
+    <span class="tag">3.3</span>
+  </div>
+
+  <div class="callout deep">
+    <span class="lab">概念澄清</span>
+    <p>
+      <strong>费米能级不是电子的能量，而是电子系统的化学势。</strong>
+      它的严格含义是：在恒温恒容下，向系统加入一个电子所引起的自由能增量。
+      把 <span class="sym">E</span><sub>F</sub> 画在能带图上，只是借用能量坐标来标示这个化学势的高低——
+      它可以在禁带里，也可以在导带里（简并时），甚至完全不对应任何真实存在的能级。
+    </p>
+    <p>
+      当系统存在静电势 <span class="sym">ψ</span> 时，真正守恒的量是<strong>电化学势</strong>
+      <span class="sym">E</span><sub>F</sub> = <span class="sym">μ</span> − <span class="sym">qψ</span>。
+      下文所说的"费米能级"，一律指这个包含静电势的电化学势。
+    </p>
+  </div>
+
+  <h3>3.2 掺杂如何移动费米能级</h3>
+
+  <p>
+    由式 3.3 可以直接读出规律：<span class="sym">n</span> 越大，<span class="sym">E</span><sub>c</sub> − <span class="sym">E</span><sub>F</sub> 就必须越小。
+    掺入施主把电子浓度抬高，费米能级便<strong>向导带靠拢</strong>；掺入受主则相反。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 880 330" role="img" aria-label="本征、n型、p型半导体的费米能级位置对比">
+      <defs>
+        <marker id="arDim" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto">
+          <path d="M0,7 L4,0 L8,7" fill="none" stroke="#4f6577" stroke-width="1.4"/>
+        </marker>
+      </defs>
+
+      <!-- 面板 1：本征 -->
+      <g>
+        <text class="svgtxt mono" x="52" y="34" fill="#4f6577">(a) 本征</text>
+        <rect x="52" y="88" width="210" height="164" fill="rgba(120,170,220,.035)"/>
+        <line x1="52" y1="88" x2="262" y2="88" stroke="#6aa9ff" stroke-width="2"/>
+        <line x1="52" y1="252" x2="262" y2="252" stroke="#ff8a72" stroke-width="2"/>
+        <line x1="52" y1="170" x2="262" y2="170" stroke="#5ee0a0" stroke-width="1.6" stroke-dasharray="6 5"/>
+        <text class="svgtxt it" x="270" y="92" fill="#8fbcff">E<tspan font-size="10" dy="3">c</tspan></text>
+        <text class="svgtxt it" x="270" y="256" fill="#ffa994">E<tspan font-size="10" dy="3">v</tspan></text>
+        <text class="svgtxt sm" x="270" y="174" fill="#5ee0a0">E<tspan font-size="10" dy="3">F</tspan><tspan dy="-3"> = E</tspan><tspan font-size="10" dy="3">i</tspan></text>
+        <text class="svgtxt sm" x="52" y="286" fill="#8b9bab">n = p = n<tspan font-size="10" dy="3">i</tspan></text>
+        <text class="svgtxt sm" x="52" y="306" fill="#5f7186">= 1.0×10¹⁰ cm⁻³</text>
+      </g>
+
+      <!-- 面板 2：n 型 -->
+      <g>
+        <text class="svgtxt mono" x="330" y="34" fill="#4f6577">(b) n 型</text>
+        <rect x="330" y="88" width="210" height="164" fill="rgba(120,170,220,.035)"/>
+        <line x1="330" y1="88" x2="540" y2="88" stroke="#6aa9ff" stroke-width="2"/>
+        <line x1="330" y1="252" x2="540" y2="252" stroke="#ff8a72" stroke-width="2"/>
+        <line x1="330" y1="118" x2="540" y2="118" stroke="#5ee0a0" stroke-width="1.6" stroke-dasharray="6 5"/>
+        <!-- 电子 -->
+        <circle cx="358" cy="104" r="3.4" fill="#6aa9ff"/>
+        <circle cx="382" cy="104" r="3.4" fill="#6aa9ff"/>
+        <circle cx="406" cy="104" r="3.4" fill="#6aa9ff"/>
+        <circle cx="430" cy="104" r="3.4" fill="#6aa9ff"/>
+        <!-- 空穴 -->
+        <circle cx="358" cy="238" r="3.4" fill="none" stroke="#ff8a72" stroke-width="1.4"/>
+        <text class="svgtxt it" x="548" y="92" fill="#8fbcff">E<tspan font-size="10" dy="3">c</tspan></text>
+        <text class="svgtxt it" x="548" y="256" fill="#ffa994">E<tspan font-size="10" dy="3">v</tspan></text>
+        <text class="svgtxt sm" x="548" y="122" fill="#5ee0a0">E<tspan font-size="10" dy="3">F</tspan></text>
+        <line x1="512" y1="88" x2="512" y2="118" stroke="#4f6577" stroke-width="1" marker-start="url(#arDim)" marker-end="url(#arDim)"/>
+        <text class="svgtxt mono" x="470" y="82" fill="#5f7186">0.205 eV</text>
+        <text class="svgtxt sm" x="330" y="286" fill="#8b9bab">n ≈ N<tspan font-size="10" dy="3">D</tspan><tspan dy="-3"> = 10¹⁶，p = 10⁴</tspan></text>
+        <text class="svgtxt sm" x="330" y="306" fill="#5f7186">多子：电子　少子：空穴</text>
+      </g>
+
+      <!-- 面板 3：p 型 -->
+      <g>
+        <text class="svgtxt mono" x="610" y="34" fill="#4f6577">(c) p 型</text>
+        <rect x="610" y="88" width="210" height="164" fill="rgba(120,170,220,.035)"/>
+        <line x1="610" y1="88" x2="820" y2="88" stroke="#6aa9ff" stroke-width="2"/>
+        <line x1="610" y1="252" x2="820" y2="252" stroke="#ff8a72" stroke-width="2"/>
+        <line x1="610" y1="222" x2="820" y2="222" stroke="#5ee0a0" stroke-width="1.6" stroke-dasharray="6 5"/>
+        <circle cx="638" cy="104" r="3.4" fill="#6aa9ff"/>
+        <circle cx="638" cy="238" r="3.4" fill="none" stroke="#ff8a72" stroke-width="1.4"/>
+        <circle cx="662" cy="238" r="3.4" fill="none" stroke="#ff8a72" stroke-width="1.4"/>
+        <circle cx="686" cy="238" r="3.4" fill="none" stroke="#ff8a72" stroke-width="1.4"/>
+        <circle cx="710" cy="238" r="3.4" fill="none" stroke="#ff8a72" stroke-width="1.4"/>
+        <text class="svgtxt it" x="828" y="92" fill="#8fbcff">E<tspan font-size="10" dy="3">c</tspan></text>
+        <text class="svgtxt it" x="828" y="256" fill="#ffa994">E<tspan font-size="10" dy="3">v</tspan></text>
+        <text class="svgtxt sm" x="828" y="226" fill="#5ee0a0">E<tspan font-size="10" dy="3">F</tspan></text>
+        <line x1="792" y1="222" x2="792" y2="252" stroke="#4f6577" stroke-width="1" marker-start="url(#arDim)" marker-end="url(#arDim)"/>
+        <text class="svgtxt mono" x="748" y="216" fill="#5f7186">0.180 eV</text>
+        <text class="svgtxt sm" x="610" y="286" fill="#8b9bab">p ≈ N<tspan font-size="10" dy="3">A</tspan><tspan dy="-3"> = 10¹⁶，n = 10⁴</tspan></text>
+        <text class="svgtxt sm" x="610" y="306" fill="#5f7186">多子：空穴　少子：电子</text>
+      </g>
+    </svg>
+    <figcaption>
+      <span class="fno">图 2</span>
+      <b>掺杂对费米能级位置的调制。</b>本征材料中费米能级位于禁带中央附近；
+      施主把 <span class="sym">E</span><sub>F</sub> 推向 <span class="sym">E</span><sub>c</sub>，受主把 <span class="sym">E</span><sub>F</sub> 推向 <span class="sym">E</span><sub>v</sub>。
+      注意三幅图的禁带宽度完全相同，唯一改变的是费米能级的位置——而载流子浓度正是由这个位置按指数关系决定的。
+    </figcaption>
+  </figure>
+
+  <h3>3.3 热平衡的判据：费米能级处处水平</h3>
+
+  <p>
+    这一节是理解 PN 结的关键。载流子的输运由电化学势的梯度驱动，写成电流密度形式就是：
+  </p>
+
+  <div class="eq">
+    <i>J</i><sub>n</sub> = <i>μ</i><sub>n</sub> <i>n</i>
+    <span class="frac"><span>d<i>E</i><sub>Fn</sub></span><span>d<i>x</i></span></span>，
+    &nbsp;&nbsp;&nbsp;
+    <i>J</i><sub>p</sub> = <i>μ</i><sub>p</sub> <i>p</i>
+    <span class="frac"><span>d<i>E</i><sub>Fp</sub></span><span>d<i>x</i></span></span>
+    <span class="tag">3.4</span>
+  </div>
+
+  <p>
+    热平衡意味着没有净电流。<strong>没有净电流，就意味着费米能级在任何方向上都不能有梯度</strong>——
+    于是它在整块材料中必须是一条水平线。这是一条充要的判据，也是检验任何能带图画得对不对的第一标准。
+  </p>
+
+  <div class="callout">
+    <span class="lab">此处的常见困惑</span>
+    <p>
+      "既然平衡时没有电流，为什么 PN 结的能带是弯的？"
+    </p>
+    <p>
+      因为<strong>能带弯曲描述的是静电势，费米能级水平描述的是没有净电流</strong>，两者是完全不同层面的信息。
+      内建电场确实存在，它使 <span class="sym">E</span><sub>c</sub>、<span class="sym">E</span><sub>v</sub> 随位置变化；
+      但与此同时，载流子浓度也按照完全相同的形状重新分布，使得"浓度梯度产生的扩散"与"电场产生的漂移"在每个位置精确抵消。
+      净效果为零，<span class="sym">E</span><sub>F</sub> 因此保持水平。
+    </p>
+  </div>
+
+  <p>
+    由此立刻得到两个重要推论，它们会在第 5、6 章被反复使用：
+  </p>
+
+  <ol>
+    <li><strong>能带的总弯曲量就等于内建电势乘以电子电荷</strong>，即 <span class="sym">qV</span><sub>bi</sub>。因为 <span class="sym">E</span><sub>F</sub> 水平，两端的 <span class="sym">E</span><sub>c</sub> 之差只能全部来自静电势差。</li>
+    <li><strong>能带弯曲的形状由泊松方程决定</strong>，而不是由费米能级决定。费米能级只负责"画一条水平线"，剩下的几何形状全部来自空间电荷分布。</li>
+  </ol>
+
+  <h3>3.4 温度：费米能级的"回归本征"倾向</h3>
+
+  <p>
+    温度升高时，本征载流子浓度按 exp(−<span class="sym">E</span><sub>g</sub>/2<span class="sym">kT</span>) 急剧上升，
+    逐渐追上甚至超过掺杂浓度。费米能级随之向禁带中央 <span class="sym">E</span><sub>i</sub> 靠拢——
+    掺杂的效果被热激发"淹没"。当 <span class="sym">n</span><sub>i</sub> 接近 <span class="sym">N</span><sub>D</sub> 时，材料失去 n 型特征，
+    器件失效。硅器件的最高工作温度（约 150–200 °C）正是由这条规律设定的。
+  </p>
+</section>
+
+<!-- ============================ §4 ============================ -->
+<section class="chapter" id="s4">
+  <div class="ch-head">
+    <div class="ch-num">04</div>
+    <h2>结的形成：扩散、空间电荷与内建电场的三方平衡</h2>
+  </div>
+
+  <p class="lead">
+    把一块 n 型半导体和一块 p 型半导体接成一体，接触瞬间会发生一连串连锁反应。
+    这个反应链只有四个环节，但它自我终止、自我稳定——最终的产物就是 PN 结。
+  </p>
+
+  <h3>4.1 连锁反应的四步</h3>
+
+  <ol>
+    <li>
+      <strong>浓度梯度引发扩散。</strong>n 区电子浓度 10<sup>16</sup>、p 区只有 10<sup>4</sup>，
+      相差 12 个数量级；空穴则相反。巨大的浓度梯度驱动电子向 p 区扩散、空穴向 n 区扩散。
+      这一步与电场无关，纯粹是热运动的统计学结果。
+    </li>
+    <li>
+      <strong>电离杂质被留下，形成空间电荷。</strong>电子走了，但它所属的施主原子（已电离为正离子）
+      被固定在晶格上动弹不得。于是 n 区界面附近积累了<strong>正电荷</strong>；同理，p 区界面附近积累了
+      负的受主离子。这些电荷不能移动，称为<strong>空间电荷</strong>。
+    </li>
+    <li>
+      <strong>空间电荷建立电场。</strong>正负电荷层之间产生由 n 指向 p 的电场。
+      同时，界面附近的载流子已被扩散走、又得不到补充，浓度降到极低——这片区域被称为
+      <strong>耗尽区</strong>（或空间电荷区）。
+    </li>
+    <li>
+      <strong>电场产生反向漂移，直到平衡。</strong>电场把电子往 n 区推、把空穴往 p 区推，
+      方向恰好与扩散相反。扩散越强，积累的电荷越多，电场越强，漂移也越强。
+      当两者在每个位置都精确抵消时，系统达到热平衡，净电流为零，反应停止。
+    </li>
+  </ol>
+
+  <figure>
+    <svg viewBox="0 0 880 400" role="img" aria-label="PN 结中扩散与漂移的方向与平衡">
+      <defs>
+        <marker id="mB" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto">
+          <path d="M0,1 L9,5 L0,9" fill="none" stroke="#6aa9ff" stroke-width="1.7" stroke-linecap="round"/>
+        </marker>
+        <marker id="mBrev" markerWidth="10" markerHeight="10" refX="1.5" refY="5" orient="auto">
+          <path d="M9,1 L0,5 L9,9" fill="none" stroke="#6aa9ff" stroke-width="1.7" stroke-linecap="round"/>
+        </marker>
+        <marker id="mC" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto">
+          <path d="M0,1 L9,5 L0,9" fill="none" stroke="#ff8a72" stroke-width="1.7" stroke-linecap="round"/>
+        </marker>
+        <marker id="mCrev" markerWidth="10" markerHeight="10" refX="1.5" refY="5" orient="auto">
+          <path d="M9,1 L0,5 L9,9" fill="none" stroke="#ff8a72" stroke-width="1.7" stroke-linecap="round"/>
+        </marker>
+        <marker id="mA" markerWidth="10" markerHeight="10" refX="1.5" refY="5" orient="auto">
+          <path d="M9,1 L0,5 L9,9" fill="none" stroke="#ffc857" stroke-width="1.8" stroke-linecap="round"/>
+        </marker>
+      </defs>
+
+      <!-- 区域 -->
+      <rect x="40" y="40" width="270" height="300" fill="rgba(255,138,114,.045)"/>
+      <rect x="310" y="40" width="250" height="300" fill="rgba(120,170,220,.075)"/>
+      <rect x="560" y="40" width="280" height="300" fill="rgba(106,169,255,.045)"/>
+
+      <text class="svgtxt mono" x="70" y="30" fill="#ffa994">p 区</text>
+      <text class="svgtxt mono" x="392" y="30" fill="#9fc4ee">耗尽区</text>
+      <text class="svgtxt mono" x="770" y="30" fill="#8fbcff">n 区</text>
+
+      <line x1="310" y1="40" x2="310" y2="340" stroke="#2a3a4c" stroke-width="1" stroke-dasharray="5 5"/>
+      <line x1="560" y1="40" x2="560" y2="340" stroke="#2a3a4c" stroke-width="1" stroke-dasharray="5 5"/>
+
+      <!-- 空间电荷 -->
+      <text class="svgtxt sm" x="392" y="72" fill="#8fa6bb">受主负离子 − − −</text>
+      <text class="svgtxt sm" x="460" y="72" fill="#8fa6bb">+ + + 施主正离子</text>
+
+      <!-- 电子扩散 -->
+      <line x1="800" y1="122" x2="120" y2="122" stroke="#6aa9ff" stroke-width="2.2" marker-end="url(#mBrev)"/>
+      <text class="svgtxt sm" x="120" y="112" fill="#8fbcff">电子扩散（梯度驱动，n → p）</text>
+
+      <!-- 电子漂移 -->
+      <line x1="120" y1="166" x2="800" y2="166" stroke="#6aa9ff" stroke-width="1.6" stroke-dasharray="7 6" marker-end="url(#mB)"/>
+      <text class="svgtxt sm" x="640" y="156" fill="#5f7186">电子漂移（电场驱动，p → n）</text>
+
+      <!-- 空穴扩散 -->
+      <line x1="120" y1="222" x2="800" y2="222" stroke="#ff8a72" stroke-width="2.2" marker-end="url(#mC)"/>
+      <text class="svgtxt sm" x="640" y="212" fill="#ffa994">空穴扩散（p → n）</text>
+
+      <!-- 空穴漂移 -->
+      <line x1="800" y1="266" x2="120" y2="266" stroke="#ff8a72" stroke-width="1.6" stroke-dasharray="7 6" marker-end="url(#mCrev)"/>
+      <text class="svgtxt sm" x="120" y="256" fill="#5f7186">空穴漂移（n → p）</text>
+
+      <!-- 电场 -->
+      <line x1="552" y1="316" x2="318" y2="316" stroke="#ffc857" stroke-width="2.2" marker-end="url(#mA)"/>
+      <text class="svgtxt sm" x="400" y="338" fill="#ffc857">内建电场 E</text>
+
+      <!-- 平衡注记 -->
+      <text class="svgtxt sm" x="40" y="374" fill="#5f7186">热平衡：每一处扩散流都被等量漂移流抵消 → J = 0 → 费米能级水平</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 3</span>
+      <b>扩散与漂移的对峙。</b>实线为扩散（由浓度梯度驱动），虚线为漂移（由内建电场驱动），二者方向相反。
+      注意电子与空穴的漂移方向都指向各自的多数区——内建电场的作用是<strong>阻止载流子继续流失</strong>，而不是驱动它们前进。
+    </figcaption>
+  </figure>
+
+  <h3>4.2 扩散电流的定量形式</h3>
+
+  <p>
+    扩散电流正比于浓度梯度，比例系数是扩散系数 <span class="sym">D</span>。注意空穴的电流方向与浓度梯度方向相反
+    （因为空穴带正电，且沿"浓度降低"的方向流动）：
+  </p>
+
+  <div class="eq">
+    <i>J</i><sub>n,diff</sub> = <i>qD</i><sub>n</sub>
+    <span class="frac"><span>d<i>n</i></span><span>d<i>x</i></span></span>，
+    &nbsp;&nbsp;&nbsp;
+    <i>J</i><sub>p,diff</sub> = −<i>qD</i><sub>p</sub>
+    <span class="frac"><span>d<i>p</i></span><span>d<i>x</i></span></span>
+    <span class="tag">4.1</span>
+  </div>
+
+  <h3>4.3 漂移电流与爱因斯坦关系</h3>
+
+  <p>
+    漂移电流由电场驱动，比例系数是迁移率 <span class="sym">μ</span>：
+  </p>
+
+  <div class="eq">
+    <i>J</i><sub>n,drift</sub> = <i>qμ</i><sub>n</sub><i>nE</i>，
+    &nbsp;&nbsp;&nbsp;
+    <i>J</i><sub>p,drift</sub> = <i>qμ</i><sub>p</sub><i>pE</i>
+    <span class="tag">4.2</span>
+  </div>
+
+  <p>
+    现在把平衡条件代入：令 <span class="sym">J</span><sub>n</sub> = <span class="sym">J</span><sub>n,diff</sub> + <span class="sym">J</span><sub>n,drift</sub> = 0，
+    并用 <span class="sym">E</span> = −d<span class="sym">ψ</span>/d<span class="sym">x</span>。把式 3.3 的 <span class="sym">n</span>(<span class="sym">x</span>) 求导可得
+    d<span class="sym">n</span>/d<span class="sym">x</span> = (<span class="sym">n</span>/<span class="sym">kT</span>)·<span class="sym">q</span>(d<span class="sym">ψ</span>/d<span class="sym">x</span>)，
+    代回后电场项与浓度项同时消去，只剩一个<strong>与材料、掺杂、位置全部无关</strong>的关系：
+  </p>
+
+  <div class="eq">
+    <span class="frac"><span><i>D</i><sub>n</sub></span><span><i>μ</i><sub>n</sub></span></span>
+    = <span class="frac"><span><i>D</i><sub>p</sub></span><span><i>μ</i><sub>p</sub></span></span>
+    = <span class="frac"><span><i>kT</i></span><span><i>q</i></span></span>
+    = <i>V</i><sub>T</sub> ≈ 25.85 mV&nbsp;<span class="note-inline">（300 K）</span>
+    <span class="tag">4.3 · 爱因斯坦关系</span>
+  </div>
+
+  <p>
+    这个关系的物理含义值得多说一句：<strong>扩散与漂移不是两种独立的机制，而是同一个热运动在不同观察角度下的表现。</strong>
+    载流子的随机热运动既造成净扩散（当存在梯度时），也造成漂移（当存在电场时），两者被同一个温度参数绑在一起。
+    这也是为什么在热平衡下，它们必然能够精确抵消——它们本来就同源。
+  </p>
+
+  <h3>4.4 一个必须澄清的误解</h3>
+
+  <div class="callout warn">
+    <span class="lab">常见错误</span>
+    <p>
+      <strong>"PN 结的内建电场可以驱动电流，所以能对外输出功率。"</strong>
+    </p>
+    <p>
+      这是错的，而且在概念上错得很彻底。在热平衡下，内建电场产生的漂移电流与扩散电流<strong>大小相等、方向相反</strong>，
+      净电流恒为零。用一个外电路把两端连起来，什么也不会发生——因为两端之间<strong>没有电化学势差</strong>
+      （<span class="sym">E</span><sub>F</sub> 处处相同）。
+    </p>
+    <p>
+      内建电场能做的唯一一件事，是<strong>阻止载流子在浓度梯度下继续流失</strong>。它是一个"守门人"，不是一个"发动机"。
+      要让 PN 结输出功率，必须外加能量（光照），而那正是太阳能电池的原理——注意，此时费米能级会发生分裂，
+      系统不再处于热平衡。
+    </p>
+  </div>
+</section>
+
+<!-- ============================ §5 ============================ -->
+<section class="chapter" id="s5">
+  <div class="ch-head">
+    <div class="ch-num">05</div>
+    <h2>定量描述：泊松方程、内建电势与耗尽宽度</h2>
+  </div>
+
+  <p class="lead">
+    定性图像已经完整，接下来把它写成方程。这一章的所有结果，都只依赖两个输入：
+    空间电荷的分布形状，以及"费米能级必须水平"这个边界条件。
+  </p>
+
+  <h3>5.1 泊松方程与耗尽近似</h3>
+
+  <p>
+    电势与电荷分布由泊松方程联系。在耗尽区内，自由载流子已被"清空"，
+    电荷几乎全部来自电离杂质离子：
+  </p>
+
+  <div class="eq">
+    <span class="frac"><span>d<sup>2</sup><i>ψ</i></span><span>d<i>x</i><sup>2</sup></span></span>
+    = −<span class="frac"><span><i>ρ</i>(<i>x</i>)</span><span><i>ε</i><sub>s</sub></span></span>，
+    &nbsp;&nbsp;
+    <i>ρ</i> =
+    { <span class="note-inline">−<i>qN</i><sub>A</sub> (−<i>x</i><sub>p</sub> &lt; <i>x</i> &lt; 0)；+<i>qN</i><sub>D</sub> (0 &lt; <i>x</i> &lt; <i>x</i><sub>n</sub>)；0 (其余)</span> }
+    <span class="tag">5.1</span>
+  </div>
+
+  <p>
+    这就是<strong>耗尽近似</strong>：把耗尽区内的载流子浓度当作零。它的合理性来自数量级——
+    耗尽区内的载流子浓度比电离杂质浓度低好几个数量级，对电荷的贡献可以忽略。这个近似在
+    正偏较大时会失效（那时注入的载流子与背景电荷可比），这也是"大注入效应"的来源。
+  </p>
+
+  <h3>5.2 内建电势：两种等价推导</h3>
+
+  <p>
+    <strong>路径一（能带法，最直观）。</strong><span class="sym">E</span><sub>F</sub> 水平，所以两端的
+    <span class="sym">E</span><sub>c</sub> 之差就是全部的电势能差。把式 3.3 写两次（分别对 n 区与 p 区），相减即得：
+  </p>
+
+  <div class="eq">
+    <i>qV</i><sub>bi</sub> = <i>kT</i> ln&#8203;
+    <span class="frac"><span><i>N</i><sub>A</sub><i>N</i><sub>D</sub></span><span><i>n</i><sub>i</sub><sup>2</sup></span></span>
+    &nbsp;&nbsp;⟹&nbsp;&nbsp;
+    <i>V</i><sub>bi</sub> ≈ 0.71 V&nbsp;<span class="note-inline">（N<sub>A</sub>=N<sub>D</sub>=10<sup>16</sup>）</span>
+    <span class="tag">5.2</span>
+  </div>
+
+  <p>
+    <strong>路径二（电流法，更严格）。</strong>直接令 <span class="sym">J</span><sub>n</sub> = 0 并对整个结积分，
+    会得到完全相同的结果。两条路径的等价性，正是"费米能级水平"与"净电流为零"这两个陈述互为充要条件的体现。
+  </p>
+
+  <p>
+    式 5.2 有一个值得注意的性质：<strong>内建电势由两侧的掺杂浓度之比决定，而且只按对数增长</strong>。
+    掺杂提高一个数量级，<span class="sym">V</span><sub>bi</sub> 只增加约 60 mV。硅器件的 <span class="sym">V</span><sub>bi</sub> 因此被牢牢锁定在 0.6–0.9 V 区间，
+    无法通过掺杂显著改变。
+  </p>
+
+  <h3>5.3 耗尽宽度与电场分布</h3>
+
+  <p>
+    对式 5.1 积分两次，并施加"电场在耗尽区边界处为零"的边界条件，得到耗尽宽度：
+  </p>
+
+  <div class="eq">
+    <i>W</i> = √&#8203;<span style="font-size:1.15em">(</span>
+    <span class="frac"><span>2<i>ε</i><sub>s</sub>(<i>V</i><sub>bi</sub> − <i>V</i>)</span><span><i>q</i></span></span>
+    <span style="font-size:1.15em">(</span>
+    <span class="frac"><span>1</span><span><i>N</i><sub>A</sub></span></span> +
+    <span class="frac"><span>1</span><span><i>N</i><sub>D</sub></span></span>
+    <span style="font-size:1.15em">)</span>
+    <span style="font-size:1.15em">)</span>
+    <span class="tag">5.3</span>
+  </div>
+
+  <p>
+    其中 <span class="sym">V</span> 是外加偏压（正偏为正）。两个关键结论：
+  </p>
+
+  <ul>
+    <li><strong>正偏使 <span class="sym">W</span> 变窄</strong>（<span class="sym">V</span><sub>bi</sub> − <span class="sym">V</span> 减小），反偏使 <span class="sym">W</span> 变宽。这就是变容二极管的工作原理。</li>
+    <li><strong>耗尽区向轻掺杂一侧延伸得更多</strong>：<span class="sym">x</span><sub>p</sub><span class="sym">N</span><sub>A</sub> = <span class="sym">x</span><sub>n</sub><span class="sym">N</span><sub>D</sub>。掺杂低的一侧需要更宽的空间来"摊开"同样多的电荷。这就是为什么 <span class="sym">p</span><sup>+</sup><span class="sym">n</span> 结的耗尽区几乎全部落在 n 区。</li>
+  </ul>
+
+  <figure>
+    <svg id="figPotential" role="img" aria-label="PN 结的空间电荷、电场与电势分布"></svg>
+    <figcaption>
+      <span class="fno">图 4</span>
+      <b>空间电荷 ρ(<span class="sym">x</span>)、电场 <span class="sym">E</span>(<span class="sym">x</span>) 与电势 <span class="sym">ψ</span>(<span class="sym">x</span>) 的对应关系。</b>
+      上图的矩形电荷分布积分一次得到中图的三角形电场，再积分一次得到下图的抛物线形电势。
+      电场的峰值在冶金结处，电势在耗尽区两端分别达到平台——平台之间的落差就是 <span class="sym">V</span><sub>bi</sub>。
+      本图取 N<sub>A</sub> = N<sub>D</sub>，故左右对称。
+    </figcaption>
+  </figure>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 2 · 平衡态（V = 0）的关键数值，N<sub>A</sub> = N<sub>D</sub> = 1×10<sup>16</sup> cm<sup>−3</sup>，ε<sub>r</sub> = 11.7</caption>
+      <thead>
+        <tr><th>物理量</th><th>表达式</th><th class="num">数值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="k">内建电势</td><td>(kT/q)·ln(N<sub>A</sub>N<sub>D</sub>/n<sub>i</sub>²)</td><td class="num">0.714 V</td></tr>
+        <tr><td class="k">耗尽宽度</td><td>式 5.3</td><td class="num">0.430 μm</td></tr>
+        <tr><td class="k">单侧宽度</td><td>x<sub>p</sub> = x<sub>n</sub></td><td class="num">0.215 μm</td></tr>
+        <tr><td class="k">峰值电场</td><td>qN<sub>A</sub>x<sub>p</sub>/ε<sub>s</sub></td><td class="num">3.3×10<sup>4</sup> V/cm</td></tr>
+        <tr><td class="k">单位面积电容</td><td>ε<sub>s</sub>/W</td><td class="num">24 nF/cm²</td></tr>
+        <tr><td class="k">耗尽区电荷面密度</td><td>N<sub>A</sub>x<sub>p</sub></td><td class="num">2.15×10<sup>11</sup> q/cm²</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ §6 ============================ -->
+<section class="chapter" id="s6">
+  <div class="ch-head">
+    <div class="ch-num">06</div>
+    <h2>平衡态全景：能带图与载流子分布</h2>
+  </div>
+
+  <p class="lead">
+    把前五章的结论合成一张图，就得到了 PN 结的"标准像"：能带弯曲、费米能级水平、
+    耗尽区居中、载流子浓度呈十二个数量级的台阶。这张图是后续所有分析的出发点。
+  </p>
+
+  <h3>6.1 能带图：弯曲的带，水平的线</h3>
+
+  <figure>
+    <svg id="figBandEq" role="img" aria-label="热平衡下 PN 结的能带图"></svg>
+    <figcaption>
+      <span class="fno">图 5</span>
+      <b>热平衡下的 PN 结能带图。</b>
+      导带 <span class="sym">E</span><sub>c</sub> 与价带 <span class="sym">E</span><sub>v</sub> 在结区连续弯曲，
+      总落差为 <span class="sym">qV</span><sub>bi</sub> ≈ 0.71 eV；而费米能级 <span class="sym">E</span><sub>F</sub> 是一条严格的水平线。
+      这一"弯"一"平"的组合，就是热平衡中"存在电场但无净电流"的图形化表达。
+      图中 <span class="sym">E</span><sub>c</sub>−<span class="sym">E</span><sub>F</sub> 在 n 区为 0.205 eV、<span class="sym">E</span><sub>F</sub>−<span class="sym">E</span><sub>v</sub> 在 p 区为 0.180 eV，
+      二者之和加上禁带宽度恰好等于 0.714 eV——这不是巧合，而是式 5.2 的几何含义。
+    </figcaption>
+  </figure>
+
+  <h3>6.2 载流子浓度：十二个数量级的台阶</h3>
+
+  <p>
+    能带图只告诉你"能量地形"，载流子分布才是"人口分布"。把 <span class="sym">n</span>(<span class="sym">x</span>) 与
+    <span class="sym">p</span>(<span class="sym">x</span>) 画在对数坐标上，会看到一幅极其干净的图像：
+  </p>
+
+  <figure>
+    <svg id="figCarrier" role="img" aria-label="PN 结中电子与空穴浓度的对数分布"></svg>
+    <figcaption>
+      <span class="fno">图 6</span>
+      <b>平衡态下载流子浓度的空间分布（对数纵轴）。</b>
+      多子浓度在各自区域内基本恒定（10<sup>16</sup>），少子浓度同样恒定（10<sup>4</sup>），
+      二者的过渡全部发生在 0.43 μm 宽的耗尽区内。在对数坐标下，两条曲线关于
+      <span class="sym">n</span><sub>i</sub> 呈<strong>镜像对称</strong>——这正是 <span class="sym">np</span> = <span class="sym">n</span><sub>i</sub><sup>2</sup> 的几何表现：
+      一条上升多少，另一条就下降多少。
+    </figcaption>
+  </figure>
+
+  <div class="card">
+    <h4><span class="dot"></span>为什么必须用对数坐标？</h4>
+    <p>
+      因为少子与多子相差 12 个数量级。若用线性纵轴，<span class="sym">p</span> 曲线在 n 区将完全贴在横轴上，
+      看上去像"零"——但它并不是零，而是 10<sup>4</sup> cm<sup>−3</sup>。
+    </p>
+    <p>
+      <mark>"少子浓度极低"和"少子无关紧要"是两件完全不同的事。</mark>
+      在正向偏置下，正是这 10<sup>4</sup> cm<sup>−3</sup> 的少子被指数级放大，
+      成为决定整个器件电流的主角（见第 7、8 章）。线性坐标会系统性地掩盖这一点。
+    </p>
+  </div>
+
+  <h3>6.3 三个容易被忽略的细节</h3>
+
+  <ol>
+    <li>
+      <strong>耗尽区并非"完全没有载流子"。</strong>它只是载流子浓度远低于电离杂质浓度。
+      在结中心，<span class="sym">n</span> 与 <span class="sym">p</span> 都降到 <span class="sym">n</span><sub>i</sub> 量级（10<sup>10</sup>），
+      而不是零。这也解释了为什么反偏时耗尽区里仍有"产生电流"——那里的载流子虽少，却仍在被不断产生。
+    </li>
+    <li>
+      <strong>过渡是连续的，不是阶跃的。</strong>图 6 中的曲线在耗尽区内是一条平滑的斜线（对数坐标下近似线性），
+      因为电势在那里按抛物线变化，而浓度按电势的指数变化。
+    </li>
+    <li>
+      <strong>乘积恒定，各自剧变。</strong>在整条曲线上任取一点，<span class="sym">np</span> 都精确等于 <span class="sym">n</span><sub>i</sub><sup>2</sup>。
+      这是热平衡的标志，也是判断"这张图是不是平衡态"的快捷方法。
+    </li>
+  </ol>
+</section>
+
+<!-- ============================ §7 ============================ -->
+<section class="chapter" id="s7">
+  <div class="ch-head">
+    <div class="ch-num">07</div>
+    <h2>少子与多子：非平衡下的分工</h2>
+  </div>
+
+  <p class="lead">
+    加上偏压之后，系统离开热平衡。此时"费米能级"这个概念需要被拆成两个，
+    而正是这个拆分，把 PN 结从一个静态结构变成了一个有源器件。
+  </p>
+
+  <h3>7.1 低注入：多子负责维持电中性</h3>
+
+  <p>
+    正向偏置时，p 区的空穴被推向 n 区，n 区的电子被推向 p 区。但在正常工作范围内，
+    注入的少子数量远小于该区的多子浓度——这就是<strong>低注入条件</strong>。它的后果是：
+  </p>
+
+  <ul>
+    <li>多子浓度的相对变化极小（千分之一量级），因此<strong>中性区依然保持电中性</strong>；</li>
+    <li>为了维持电中性，多子会自动重新分布去"中和"注入的少子，这个过程几乎不消耗电压；</li>
+    <li>中性区内几乎没有电场（电中性 ⇒ 泊松方程给出 ∇·<span class="sym">E</span> ≈ 0），因此<strong>少子在中性区只靠扩散运动</strong>。</li>
+  </ul>
+
+  <p>
+    一句话概括这种分工：<strong>多子是背景，少子是信号。</strong>电压几乎全部降落在耗尽区上，
+    电流却主要由中性区里的少子扩散决定。
+  </p>
+
+  <h3>7.2 边界条件：整流的微观起源</h3>
+
+  <p>
+    正偏压 <span class="sym">V</span> 使势垒从 <span class="sym">qV</span><sub>bi</sub> 降到
+    <span class="sym">q</span>(<span class="sym">V</span><sub>bi</sub> − <span class="sym">V</span>)，
+    越过势垒进入对方的载流子数量按玻尔兹曼因子增加。结果是耗尽区边界处的少子浓度被<strong>指数放大</strong>：
+  </p>
+
+  <div class="eq">
+    <i>n</i><sub>p</sub>(<i>x</i><sub>p</sub>) = <i>n</i><sub>p0</sub> exp&#8203;(
+    <span class="frac"><span><i>qV</i></span><span><i>kT</i></span></span> )，
+    &nbsp;&nbsp;&nbsp;
+    <i>p</i><sub>n</sub>(<i>x</i><sub>n</sub>) = <i>p</i><sub>n0</sub> exp&#8203;(
+    <span class="frac"><span><i>qV</i></span><span><i>kT</i></span></span> )
+    <span class="tag">7.1</span>
+  </div>
+
+  <p>
+    这个指数因子 <span class="sym">e</span><sup><span class="sym">qV</span>/<span class="sym">kT</span></sup>
+    就是整流的全部秘密：<mark>电压每增加 60 mV，结边少子浓度就增加十倍，电流也随之增加十倍</mark>。
+    反偏时 <span class="sym">V</span> &lt; 0，指数因子趋近于零，少子被"抽走"而不是注入——
+    这就是反偏电流极小且几乎不随电压变化的原因。
+  </p>
+
+  <h3>7.3 准费米能级：把"一个"拆成"两个"</h3>
+
+  <p>
+    非平衡状态下，电子与空穴各自与晶格达到平衡（各自内部有明确的温度与化学势），
+    但彼此之间不再平衡。因此需要为它们各自定义一个费米能级：
+  </p>
+
+  <div class="eq">
+    <i>n</i> = <i>N</i><sub>c</sub> exp&#8203;( −<span class="frac"><span><i>E</i><sub>c</sub> − <i>E</i><sub>Fn</sub></span><span><i>kT</i></span></span> )，
+    &nbsp;&nbsp;
+    <i>p</i> = <i>N</i><sub>v</sub> exp&#8203;( −<span class="frac"><span><i>E</i><sub>Fp</sub> − <i>E</i><sub>v</sub></span><span><i>kT</i></span></span> )
+    <span class="tag">7.2</span>
+  </div>
+
+  <p>
+    两者相乘，得到一个把"偏离平衡的程度"直接写成能级差的表达式：
+  </p>
+
+  <div class="eq">
+    <i>np</i> = <i>n</i><sub>i</sub><sup>2</sup> exp&#8203;(
+    <span class="frac"><span><i>E</i><sub>Fn</sub> − <i>E</i><sub>Fp</sub></span><span><i>kT</i></span></span> )
+    <span class="tag">7.3</span>
+  </div>
+
+  <p>
+    在理想 PN 结中，准费米能级之差恰好等于外加电压所对应的能量：
+    <span class="sym">E</span><sub>Fn</sub> − <span class="sym">E</span><sub>Fp</sub> = <span class="sym">qV</span>。
+    于是式 7.3 直接告诉你系统处于哪种状态：
+  </p>
+
+  <ul>
+    <li><strong>正偏（<span class="sym">V</span> &gt; 0）</strong>：<span class="sym">E</span><sub>Fn</sub> 高于 <span class="sym">E</span><sub>Fp</sub>，<span class="sym">np</span> &gt; <span class="sym">n</span><sub>i</sub><sup>2</sup>，结内<strong>净复合</strong>占优——注入的载流子在这里互相湮灭，复合电流由此产生。</li>
+    <li><strong>反偏（<span class="sym">V</span> &lt; 0）</strong>：<span class="sym">E</span><sub>Fn</sub> 低于 <span class="sym">E</span><sub>Fp</sub>，<span class="sym">np</span> &lt; <span class="sym">n</span><sub>i</sub><sup>2</sup>，结内<strong>净产生</strong>占优——耗尽区不断产生电子-空穴对，被电场扫出，形成产生电流。</li>
+    <li><strong>平衡（<span class="sym">V</span> = 0）</strong>：两条准费米能级重合为一条，回到第 3 章的水平线。</li>
+  </ul>
+
+  <div class="control">
+    <div class="ctl-head">
+      <div class="ctl-title">外加偏压 V <span>拖动滑块，观察能带、耗尽宽度与准费米能级如何响应</span></div>
+      <div style="font-family:var(--mono);font-size:.95rem;color:var(--cyan)">V = <span id="vOut">0.60</span> V</div>
+    </div>
+    <input type="range" id="vSlider" min="-0.6" max="0.65" step="0.01" value="0.6" aria-label="外加偏压">
+    <div class="scale-row"><span>−0.60 V 反偏</span><span>0</span><span>+0.65 V 正偏</span></div>
+    <svg id="figBandBias" role="img" aria-label="不同偏压下 PN 结的能带图与准费米能级"></svg>
+    <div class="readouts">
+      <div><div class="rl">势垒高度 q(V<sub>bi</sub> − V)</div><div class="rv" id="roBarrier">—</div></div>
+      <div><div class="rl">耗尽宽度 W</div><div class="rv green" id="roW">—</div></div>
+      <div><div class="rl">结边少子浓度 n<sub>p</sub>(x<sub>p</sub>)</div><div class="rv amber" id="roConc">—</div></div>
+      <div><div class="rl">结内 np / n<sub>i</sub>²</div><div class="rv coral" id="roNp">—</div></div>
+      <div><div class="rl">主导过程</div><div class="rv" id="roState">—</div></div>
+    </div>
+  </div>
+
+  <p>
+    拖动滑块时请留意三件事的<strong>非线性程度差异</strong>：耗尽宽度只按
+    √(<span class="sym">V</span><sub>bi</sub>−<span class="sym">V</span>) 缓慢变化（约 30%），
+    势垒高度线性变化，而结边少子浓度却按指数变化，跨越了二十多个数量级。
+    <mark>同一个电压，对三个物理量的影响强度完全不同</mark>——这正是 PN 结能被用作整流器、
+    却不能被用作线性电阻的根本原因。
+  </p>
+
+  <h3>7.4 费米能级在三种状态下的行为对照</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 3 · 费米能级在不同状态下的含义与变化</caption>
+      <thead>
+        <tr><th>状态</th><th>费米能级的形态</th><th>载流子关系</th><th>电流</th><th>物理含义</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="k">热平衡</td>
+          <td>单一 <span class="sym">E</span><sub>F</sub>，处处水平</td>
+          <td><span class="sym">np</span> = <span class="sym">n</span><sub>i</sub><sup>2</sup></td>
+          <td>零</td>
+          <td>化学势均匀，无驱动力的来源</td>
+        </tr>
+        <tr>
+          <td class="k">正偏（注入）</td>
+          <td>分裂为 <span class="sym">E</span><sub>Fn</sub>、<span class="sym">E</span><sub>Fp</sub>，差为 <span class="sym">qV</span></td>
+          <td><span class="sym">np</span> &gt; <span class="sym">n</span><sub>i</sub><sup>2</sup></td>
+          <td>大，指数增长</td>
+          <td>电化学势差驱动载流子，结内净复合</td>
+        </tr>
+        <tr>
+          <td class="k">反偏（抽取）</td>
+          <td>分裂方向相反，<span class="sym">E</span><sub>Fn</sub> 低于 <span class="sym">E</span><sub>Fp</sub></td>
+          <td><span class="sym">np</span> &lt; <span class="sym">n</span><sub>i</sub><sup>2</sup></td>
+          <td>极小，近似饱和</td>
+          <td>结内净产生，少子被电场扫出</td>
+        </tr>
+        <tr>
+          <td class="k">光照（开路）</td>
+          <td>分裂但无电流，形成光生电压</td>
+          <td><span class="sym">np</span> &gt; <span class="sym">n</span><sub>i</sub><sup>2</sup></td>
+          <td>零（开路）</td>
+          <td>光生载流子积累，<span class="sym">E</span><sub>Fn</sub>−<span class="sym">E</span><sub>Fp</sub> 即开路电压的来源</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    值得注意的是最后一行：太阳能电池的开路电压，本质上就是<strong>光生准费米能级的分裂量除以 <span class="sym">q</span></strong>。
+    这解释了为什么硅电池的开路电压被限制在 0.7 V 左右——它不可能超过 <span class="sym">V</span><sub>bi</sub> 太多，
+    否则器件就进入了 <span class="sym">np</span> 极度偏离平衡、复合急剧增强的区域。
+  </p>
+</section>
+
+<!-- ============================ §8 ============================ -->
+<section class="chapter" id="s8">
+  <div class="ch-head">
+    <div class="ch-num">08</div>
+    <h2>从微观到宏观：肖克利方程</h2>
+  </div>
+
+  <p class="lead">
+    现在把所有碎片装配起来。中性区里少子只做扩散，扩散过程中不断被复合，
+    这构成一个简单的一维边值问题——它的解，就是那条著名的指数曲线。
+  </p>
+
+  <h3>8.1 少子扩散方程</h3>
+
+  <p>
+    在 n 区（<span class="sym">x</span> &gt; <span class="sym">x</span><sub>n</sub>），空穴是少子，
+    没有电场，只有扩散与复合。稳态连续性方程化为：
+  </p>
+
+  <div class="eq">
+    <i>D</i><sub>p</sub>
+    <span class="frac"><span>d<sup>2</sup>Δ<i>p</i><sub>n</sub></span><span>d<i>x</i><sup>2</sup></span></span>
+    − <span class="frac"><span>Δ<i>p</i><sub>n</sub></span><span><i>τ</i><sub>p</sub></span></span> = 0
+    &nbsp;&nbsp;⟹&nbsp;&nbsp;
+    Δ<i>p</i><sub>n</sub>(<i>x</i>) = Δ<i>p</i><sub>n</sub>(<i>x</i><sub>n</sub>)
+    exp&#8203;( −<span class="frac"><span><i>x</i> − <i>x</i><sub>n</sub></span><span><i>L</i><sub>p</sub></span></span> )
+    <span class="tag">8.1</span>
+  </div>
+
+  <p>
+    解的形式很直观：注入的少子在离开结边后<strong>按指数衰减</strong>，特征长度正是扩散长度
+    <span class="sym">L</span><sub>p</sub>。在 <span class="sym">x</span> = <span class="sym">x</span><sub>n</sub> 处对它求导，
+    就得到结边处的扩散电流；把 p 区一侧的电子电流同样算出并相加：
+  </p>
+
+  <div class="eq">
+    <i>J</i> = <i>J</i><sub>s</sub>
+    <span style="font-size:1.1em">(</span>
+    exp&#8203;( <span class="frac"><span><i>qV</i></span><span><i>kT</i></span></span> ) − 1
+    <span style="font-size:1.1em">)</span>，
+    &nbsp;&nbsp;
+    <i>J</i><sub>s</sub> = <i>qn</i><sub>i</sub><sup>2</sup>
+    <span style="font-size:1.1em">(</span>
+    <span class="frac"><span><i>D</i><sub>p</sub></span><span><i>L</i><sub>p</sub><i>N</i><sub>D</sub></span></span> +
+    <span class="frac"><span><i>D</i><sub>n</sub></span><span><i>L</i><sub>n</sub><i>N</i><sub>A</sub></span></span>
+    <span style="font-size:1.1em">)</span>
+    <span class="tag">8.2 · Shockley 方程</span>
+  </div>
+
+  <h3>8.2 逐项解读</h3>
+
+  <ul>
+    <li>
+      <strong>指数项</strong>来自式 7.1 的边界条件——它是整流的直接来源。正偏时它迅速增大；
+      反偏超过几个 <span class="sym">kT</span>/<span class="sym">q</span> 后，它就趋于零，电流被"−1"钉死在 −<span class="sym">J</span><sub>s</sub>。
+    </li>
+    <li>
+      <strong><span class="sym">J</span><sub>s</sub> 与电压无关</strong>，只由材料参数与温度决定。
+      它正比于 <span class="sym">n</span><sub>i</sub><sup>2</sup>，而 <span class="sym">n</span><sub>i</sub><sup>2</sup> ∝ exp(−<span class="sym">E</span><sub>g</sub>/<span class="sym">kT</span>)——
+      这解释了反向饱和电流<strong>随温度指数上升</strong>，以及<strong>禁带越宽、反向漏电越小</strong>
+      （SiC、GaN 能耐受高压的微观原因之一）。
+    </li>
+    <li>
+      <strong>分母里的掺杂浓度</strong>说明：掺杂越重，<span class="sym">J</span><sub>s</sub> 越小。
+      这与直觉一致——重掺杂意味着少子基数小，能被"抽"出来的载流子也就少。
+    </li>
+    <li>
+      <strong>温度每升高 10 °C，反向电流约翻一倍</strong>。这不是故障，而是式 8.2 的必然结果，
+      也是二极管温度传感器的物理基础。
+    </li>
+  </ul>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 4 · 本页参数下的电流数值（D<sub>n</sub>=35，D<sub>p</sub>=12.5 cm²/s，τ=1 μs）</caption>
+      <thead>
+        <tr><th>偏压</th><th class="num">exp(qV/kT)</th><th class="num">J (A/cm²)</th><th>物理图像</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="k">−0.5 V</td><td class="num">4×10<sup>−9</sup></td><td class="num">−1.5×10<sup>−11</sup></td><td>反向饱和，少子被抽空</td></tr>
+        <tr><td class="k">0 V</td><td class="num">1</td><td class="num">0</td><td>平衡，净电流为零</td></tr>
+        <tr><td class="k">+0.5 V</td><td class="num">2.5×10<sup>8</sup></td><td class="num">3.8×10<sup>−3</sup></td><td>开始明显导通</td></tr>
+        <tr><td class="k">+0.6 V</td><td class="num">1.2×10<sup>10</sup></td><td class="num">0.18</td><td>完全导通，电流已相当可观</td></tr>
+        <tr><td class="k">+0.65 V</td><td class="num">8.3×10<sup>10</sup></td><td class="num">1.3</td><td>接近开启电压上限</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    注意 0.5 V 到 0.65 V 这 150 mV 的变化，让电流从 4 mA/cm² 涨到 1.3 A/cm²——
+    超过两个数量级。<strong>这就是二极管"开启电压"的真相：它不是某个开关被合上，而是一条指数曲线在我们眼睛看来像一堵墙。</strong>
+  </p>
+</section>
+
+<!-- ============================ §9 ============================ -->
+<section class="chapter" id="s9">
+  <div class="ch-head">
+    <div class="ch-num">09</div>
+    <h2>二维视角：NPN 结构中的载流子输运</h2>
+  </div>
+
+  <p class="lead">
+    前面八章都停留在一维剖面上：只看一个坐标 <span class="sym">x</span>，只看一个结。
+    现在把剖面展开成二维，并在同一块硅片上背靠背放<strong>两个</strong>结。
+    这不是引入新物理——而是把第 7 章的"少子扩散 + 准费米能级分裂"同时用在两个方向上，
+    让注入、扩散、复合、扫出这四个动作在同一幅图里同时发生。
+  </p>
+
+  <h3>9.1 为什么偏偏是 NPN</h3>
+
+  <p>
+    把一块 p 型硅的两侧各做一块 n 型区，就得到 N⁺–P–N 三明治结构。两个结的分工是刻意不对称的：
+  </p>
+
+  <ul>
+    <li><strong>左边的 EB 结（发射结）正偏。</strong>势垒被压低，左边的 N⁺ 区（<b>发射区</b>）向中间很薄的 P 区（<b>基区</b>）大量注入电子。发射区重掺杂（10<sup>18</sup>），保证注入的是电子而不是空穴。</li>
+    <li><strong>右边的 BC 结（集电结）反偏。</strong>耗尽区变宽、电场变强，落在基区里的少数载流子一旦扩散到它的边缘，就被电场<strong>扫</strong>进右边的 N 区（<b>集电区</b>）。</li>
+    <li><strong>基区必须极薄。</strong>本模型取 1.6 μm，扣除两侧耗尽区后中性基区只有约 0.94 μm，而电子扩散长度 <span class="sym">L</span><sub>n</sub> 是 59 μm。比值 0.016 意味着电子穿过基区的时间远短于它的寿命——绝大多数电子来不及复合就被集电结收走。这就是"晶体管"三个字的全部技术含义。</li>
+  </ul>
+
+  <div class="callout deep">
+    <span class="lab">与第 7 章的直接对应</span>
+    <p>
+      第 7.2 节的边界条件 <span class="sym">n</span><sub>p</sub>(<span class="sym">x</span><sub>p</sub>) =
+      <span class="sym">n</span><sub>p0</sub>e<sup><span class="sym">qV</span>/<span class="sym">kT</span></sup>
+      在这里变成了发射结的注入源；第 7.3 节的准费米能级分裂 <span class="sym">E</span><sub>Fn</sub>−<span class="sym">E</span><sub>Fp</sub> = <span class="sym">qV</span>
+      在这里分别发生在两个结上：EB 结分裂 +<span class="sym">qV</span><sub>BE</sub>，BC 结分裂 −<span class="sym">qV</span><sub>CB</sub>。
+      <strong>同一个式子，用了两次，方向相反。</strong>
+    </p>
+  </div>
+
+  <h3>9.2 交互模型：看见每一个载流子</h3>
+
+  <p>
+    下面的模型把上述过程做成二维粒子仿真。顶部是<strong>外部电路</strong>：三个端子各经一个电源接地，
+    黄色流动点表示支路中的常规电流。中间每个圆点是一个"宏观粒子"，只沿所在位置的
+    <strong>平均速度</strong>前进——不叠加无规则热运动，因此电子在基区形成一条层流：
+    越靠近集电结，浓度相对下降得越快、平均扩散速度越大，拖尾也越长。切换模式可以观察三个典型
+    工作点，以及<strong>第 10 章四个非理想效应</strong>在同一块器件上的动态表现——
+    后面四个按钮会把基区边界真的"动"起来。
+  </p>
+
+  <div class="npn-panel">
+    <div class="npn-bar">
+      <div class="npn-row1">
+        <div class="npn-modes">
+          <button type="button" data-mode="eq">热平衡</button>
+          <button type="button" data-mode="fwd" class="on">正偏 · 放大</button>
+          <button type="button" data-mode="rev">反偏 · 截止</button>
+          <span class="npn-sep"></span>
+          <span class="npn-grouplab">非理想效应</span>
+          <button type="button" data-mode="crowd">集边</button>
+          <button type="button" data-mode="kirk">Kirk</button>
+          <button type="button" data-mode="early">厄利</button>
+          <button type="button" data-mode="punch">穿通</button>
+          <button type="button" id="npnPause" class="npn-pause">暂停</button>
+        </div>
+        <div class="npn-hint" id="npnHint">V<sub>BE</sub> = +0.60 V　·　V<sub>CB</sub> = +3.0 V</div>
+      </div>
+      <div class="npn-slide" id="npnSlide" style="display:none">
+        <span class="lab" id="slideLab">驱动量</span>
+        <input type="range" id="npnSlider" min="0" max="1" step="0.01" value="0" aria-label="效应驱动量">
+        <span class="val" id="slideVal">—</span>
+      </div>
+    </div>
+    <canvas id="npnCanvas" width="1000" height="490" aria-label="NPN 结构二维载流子输运模型"></canvas>
+    <div class="npn-legend">
+      <span><i class="sw-e"></i>电子 e⁻（实心）</span>
+      <span><i class="sw-h"></i>空穴 h⁺（空心）</span>
+      <span><i class="sw-r"></i>复合事件</span>
+      <span><i class="sw-c"></i>到达集电区</span>
+      <span><i class="sw-i"></i>常规电流</span>
+      <span class="npn-legend-note">流动粒子数 ∝ 真实电流（1 个/秒 = 0.157 A/cm²）</span>
+    </div>
+    <div class="npn-profile">
+      <canvas id="npnProfile" width="1000" height="336" aria-label="电场强度、电流密度与载流子浓度的空间分布"></canvas>
+    </div>
+    <div class="readouts npn-readouts">
+      <div><div class="rl">基区在途电子</div><div class="rv" id="npnTransit">—</div></div>
+      <div><div class="rl">累计注入 / 复合</div><div class="rv amber" id="npnRatio">—</div></div>
+      <div><div class="rl">基区输运系数 α<sub>T</sub></div><div class="rv green" id="npnAlpha">—</div></div>
+      <div><div class="rl">集电极电流 J<sub>C</sub></div><div class="rv amber" id="npnJ">—</div></div>
+      <div><div class="rl">耗尽宽度 EB / BC</div><div class="rv" id="npnParams">—</div></div>
+    </div>
+  </div>
+  <p class="npn-cap">
+    <span class="fno">图 8</span>
+    <b>NPN 结构的二维载流子输运模型。</b>
+    顶部为<strong>外部电路</strong>：三个端子各经一个电源接地，E 接地 0 V，B 为 +0.60 V，C 为 +3.60 V，
+    因此 V<sub>BE</sub> = 0.60 V、V<sub>CB</sub> = 3.0 V。黄色流动点是<strong>常规电流</strong>，
+    点越密、跑得越快代表电流越大——可以看到 I<sub>E</sub> ≈ I<sub>C</sub> 而 I<sub>B</sub> 明显稀疏，
+    这正是 I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub>。
+    上栏标注各区的类型、掺杂浓度与平衡载流子浓度；中间为粒子演化区；下栏为三个动作的方向标注。
+    <strong>粒子按各自位置的平均速度匀速前进，不显示随机热运动</strong>，因此流线的走向与拖尾长度
+    直接对应真实的漂移/扩散速率。粒子流率也不是随手定的：
+    <strong>注入率由解析式 J<sub>C</sub> = q(n<sub>i</sub>²/N<sub>A</sub>)(D<sub>n</sub>/W<sub>B</sub>)e<sup>V<sub>BE</sub>/V<sub>T</sub></sup> 反算</strong>，
+    1 个粒子/秒对应 0.157 A/cm²——所以屏上流动的粒子越多，真实电流就越大，可以直接横比各模式。
+    切换"正偏·放大"可以看到完整链条：<strong>发射区电子越过降低后的势垒 → 在基区靠扩散前进 →
+    少数与空穴复合（黄色闪光）→ 到达集电结边缘被强电场扫入集电区（绿色闪光）</strong>。
+    注意基区里电子密度沿 <span class="sym">x</span> 单调下降，这正是线性少子分布 —— 它对应一个恒定的扩散电流。
+    第二组按钮<strong>集边 / Kirk / 厄利 / 穿通</strong>是"过程演示"。选中后下方会多出一条滑块，
+    滑块就是该效应的<strong>驱动量</strong>：厄利模式是 V<sub>CE</sub>，Kirk 模式是电流 J/J<sub>K</sub>。
+    点按钮时它会自动从头到尾播一遍，之后可随时手动拖动，停在任意位置观察几何怎么变。
+    以厄利模式为例：把 V<sub>CE</sub> 从 2 V 拖到 18 V，中性基区会从 1.06 μm <strong>连续收缩</strong>到 0.35 μm，
+    集电极电流同步从 6.4 A/cm² 涨到 19.6 A/cm²——基区变窄、浓度梯度变陡、电流变大，三件事是同一个过程。
+    Kirk 模式则要先把 J/J<sub>K</sub> 推过 1，基区边界才开始移动。
+    粒子图正下方那张剖面图与上图共用横轴，<strong>两条曲线都是解析式直接算出来的</strong>，不依赖粒子统计。
+    图中用竖虚线与浅色底带标出了发射区／基区／集电区以及两个耗尽区的边界，与上方粒子图的位置一一对应。
+    上半是电场 <span class="sym">E</span>(<span class="sym">x</span>)，两个耗尽区各有一个方向相反的尖峰；
+    下半是电流密度，虚线是总电流 J（处处相等，这正是连续性方程），蓝线是电子电流 J<sub>n</sub>——
+    它在发射区略高于 J、穿过基区时被复合啃掉几个百分点、到集电区回到 J，<strong>掉下去的那一小块就是基极电流</strong>；
+    橙线是空穴电流 J<sub>p</sub>，只存在于发射结附近，按其真实比例画只有 4% 看不见，故放大 6 倍并注明。
+    最下面一幅是<strong>载流子浓度（线性轴）</strong>，按结边少子浓度标定量程：
+    基区里那条从 10<sup>14</sup> 斜降到 10<sup>12</sup> 的蓝线就是被注入的少子，
+    <strong>它的斜率 dn/dx 直接给出扩散电流</strong> J<sub>n</sub> = qD<sub>n</sub>·dn/dx——
+    这也是厄利效应"基区变窄 → 梯度变陡 → 电流变大"的直观来源。多子浓度高出量程 2–4 个数量级，按顶边截断。
+    注意集电结耗尽区里那条 n 是<strong>平线</strong>（≈ J/qv<sub>sat</sub>）而不是斜坡：正因为它随电流升高、
+    最终逼近 N<sub>C</sub>，Kirk 效应才成立。
+    切换模式时三张图同步变化：Kirk 下集电结的场峰被压窄、穿通下整个基区都摊上电场、厄利下峰位随 V<sub>CE</sub> 左移。
+  </p>
+
+  <h3>9.3 三个工作点，三种图景</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 5 · 三个偏置状态下两个结的参数与主导过程（几何与掺杂见上文）</caption>
+      <thead>
+        <tr>
+          <th>状态</th><th class="num">V<sub>BE</sub></th><th class="num">V<sub>CB</sub></th>
+          <th class="num">W<sub>EB</sub></th><th class="num">W<sub>BC</sub></th>
+          <th class="num">结边注入 n<sub>p</sub>(x₁)</th><th>主导过程</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="k">热平衡</td><td class="num">0</td><td class="num">0</td>
+          <td class="num">0.330 μm</td><td class="num">0.430 μm</td>
+          <td class="num">1×10<sup>4</sup></td>
+          <td>产生与复合处处抵消，无净电流，粒子静止不动</td>
+        </tr>
+        <tr>
+          <td class="k">正偏 · 放大</td><td class="num">+0.60 V</td><td class="num">+3.0 V</td>
+          <td class="num">0.175 μm</td><td class="num">0.980 μm</td>
+          <td class="num">1.2×10<sup>14</sup></td>
+          <td>注入 → 扩散 → 少量复合 → 扫入集电区</td>
+        </tr>
+        <tr>
+          <td class="k">反偏 · 截止</td><td class="num">−0.30 V</td><td class="num">+3.0 V</td>
+          <td class="num">0.385 μm</td><td class="num">0.980 μm</td>
+          <td class="num">≈ 0</td>
+          <td>无注入，只剩耗尽区内的产生电流（反向漏电）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    请特别留意<strong>正偏时基区里的电子密度梯度</strong>。基区左侧（注入端）电子最密，向右单调变稀，
+    到集电结边缘几乎为零——因为那里是一个"完美吸收面"。这种线性分布对应恒定的扩散电流密度，
+    与第 8.1 节解出的少子扩散方程完全一致，只是把"指数衰减"换成了"短基区线性近似"：
+    当基区宽度远小于扩散长度时，指数解退化为直线。
+  </p>
+
+  <p>
+    三种状态下的横向对比还揭示了一件事：<mark>同一个结构，仅仅改变两个结的偏置，就可以从"几乎绝缘"变成"受控导通"</mark>。
+    这正是三极管作为放大器件与开关器件的基础——而它的物理内核，仍然只是第 7 章那一个指数因子。
+  </p>
+
+  <h3>9.4 模型的边界：哪些是物理，哪些是示意</h3>
+
+  <p>
+    任何可视化都必须交代它的适用范围。本模型在以下意义上是<strong>物理的</strong>：
+    耗尽宽度、内建电势、结边少子浓度、扩散长度、输运系数全部由解析式实时计算；
+    载流子的漂移方向由电场（能带梯度）决定，中性区无场、只做扩散；
+    复合只发生在电子与空穴空间上真正相遇的位置。
+  </p>
+
+  <p>
+    以下几项是<strong>为可视化而做的简化</strong>，不应被当作定量结果：
+  </p>
+
+  <ul class="tight">
+    <li><strong>只画平均速度，不画热运动。</strong>真实载流子每秒发生数十次随机碰撞，单条轨迹是折线；
+    本模型只保留这些碰撞在统计上的<strong>净结果</strong>——漂移速度与扩散净流速，
+    因此每个粒子沿一条确定的流线前进。这是为可读性做的取舍，也是本模型与真实单粒子轨迹的唯一重大差异。</li>
+    <li>耗尽宽度由解析式给定，<strong>不迭代求解自洽泊松方程</strong>，因此不体现大注入下的场分布畸变。</li>
+    <li>粒子是"宏观粒子"，数目按浓度的对数压缩；图中各区的<strong>真实浓度以文字标注为准</strong>。</li>
+    <li>基区复合概率被显著上调，以便在有限时间内观察到复合事件；真实器件的 α<sub>T</sub> &gt; 0.999，复合远比图上稀疏。</li>
+    <li>忽略速度饱和、雪崩击穿与二维边缘效应（<span class="sym">y</span> 方向视为均匀，等价于无限宽的平板）。</li>
+  </ul>
+
+  <h3>9.5 一维概念在二维模型中的落点</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>前文的物理量</th><th>在本模型中表现为</th><th>怎么看出来</th></tr></thead>
+      <tbody>
+        <tr><td class="k">扩散</td><td>中性区里沿流线的确定性净流动（随机行走的统计平均）</td><td>基区电子整体右移，越靠近集电结走得越快；该处电场为零</td></tr>
+        <tr><td class="k">漂移</td><td>耗尽区里被电场加速的定向运动</td><td>电子进入集电结后速度骤增，不再回头</td></tr>
+        <tr><td class="k">耗尽区</td><td>无粒子的深色斜纹带</td><td>宽度随偏压改变：正偏变窄，反偏变宽</td></tr>
+        <tr><td class="k">内建电场</td><td>两个带内的 amber 方向箭头</td><td>两结的场都指向基区（P 区），方向相反</td></tr>
+        <tr><td class="k">少子 / 多子</td><td>实心点与空心环的密度差异</td><td>基区满是被空穴占据的空心环，电子只在注入后出现</td></tr>
+        <tr><td class="k">复合</td><td>黄色闪光 + 一个电子与一个空穴同时消失</td><td>复合后基区空穴立刻由基极接触补充，浓度不变</td></tr>
+        <tr><td class="k">准费米能级分裂</td><td>注入浓度 10<sup>4</sup> → 10<sup>14</sup> 的跃变</td><td>切换"正偏"时基区瞬间"亮起来"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>9.6 放大从何而来：一个阀门，不是一台泵</h3>
+
+  <p>
+    先破除一个几乎人人都有的误解：<strong>晶体管不产生能量</strong>。它做的全部事情，
+    是用一个小信号去控制一股很大的能量流——能量来自电源 V<sub>CC</sub>，晶体管只决定"开多大"。
+    所以严格说，BJT 不是放大器，而是一个<strong>受控阀门</strong>；"放大"是阀门加上电源之后的整体效果。
+  </p>
+
+  <p>
+    为什么小信号能控制大能量？因为基极与集电极之间隔着一个<strong>反偏的结</strong>：
+    它像一道阻抗极高的闸门，本身几乎不耗电，但通过的电流完全由基极说了算。
+    放大由此分成两条彼此独立的链条。
+  </p>
+
+  <h4>链条一：电流放大 —— 一个空穴换来一百个电子</h4>
+
+  <p>
+    发射区重掺杂（10<sup>18</sup>）、基区极薄（中性区不到 1 μm，比扩散长度 59 μm 小两个数量级），
+    这两件事合起来保证：注入基区的电子绝大多数来不及复合，就扩散到了集电结边缘。
+    基极电流只需补充那极小的一部分复合损失。于是电流的分配变成下面这样：
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 900 350" role="img" aria-label="BJT 电流预算：基极电流仅为发射极电流的百分之一">
+      <defs>
+        <linearGradient id="barE" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#2c6a9e"/><stop offset="100%" stop-color="#6db6ff"/>
+        </linearGradient>
+        <linearGradient id="barC" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#237a63"/><stop offset="100%" stop-color="#5ee0a0"/>
+        </linearGradient>
+        <marker id="calArw" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,1 L8,4.5 L0,8" fill="none" stroke="#ffa994" stroke-width="1.5"/>
+        </marker>
+      </defs>
+
+      <text class="svgtxt mono" x="60" y="42" fill="#4f6577">电流预算 · 从发射区出发的每 100 个电子</text>
+
+      <!-- I_E -->
+      <text class="svgtxt it" x="204" y="114" text-anchor="end" fill="#8fbcff">I<tspan font-size="10" dy="3">E</tspan></text>
+      <rect x="220" y="96" width="520" height="24" rx="2" fill="url(#barE)"/>
+      <text class="svgtxt mono" x="752" y="114" fill="#8fbcff">100</text>
+
+      <!-- I_C -->
+      <text class="svgtxt it" x="204" y="158" text-anchor="end" fill="#5ee0a0">I<tspan font-size="10" dy="3">C</tspan></text>
+      <rect x="220" y="140" width="514.8" height="24" rx="2" fill="url(#barC)"/>
+      <text class="svgtxt mono" x="748" y="158" fill="#5ee0a0">99</text>
+
+      <!-- I_B -->
+      <text class="svgtxt it" x="204" y="202" text-anchor="end" fill="#ffa994">I<tspan font-size="10" dy="3">B</tspan></text>
+      <rect x="220" y="184" width="5.2" height="24" rx="1" fill="#ff8a72"/>
+      <text class="svgtxt mono" x="238" y="202" fill="#ffa994">1</text>
+
+      <!-- 引线 -->
+      <path d="M320,254 L246,208" fill="none" stroke="#ffa994" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#calArw)"/>
+      <text class="svgtxt sm" x="330" y="258" fill="#ffa994">基极只补充这 1 份复合损失</text>
+
+      <!-- 说明 -->
+      <line x1="220" y1="234" x2="740" y2="234" stroke="#1f2c3a" stroke-width="1"/>
+      <text class="svgtxt sm" x="220" y="252" fill="#5f7186">发射区注入的全部电子</text>
+      <text class="svgtxt sm" x="740" y="252" fill="#5f7186" text-anchor="end">被反偏集电结全部收走</text>
+
+      <!-- 公式 -->
+      <text class="svgtxt lg" x="220" y="306" fill="#dceaf5">β =</text>
+      <text class="svgtxt lg" x="258" y="306" fill="#dceaf5">I<tspan font-size="11" dy="4">C</tspan><tspan dy="-4"> / I</tspan><tspan font-size="11" dy="4">B</tspan></text>
+      <text class="svgtxt lg" x="352" y="306" fill="#dceaf5">= 99</text>
+      <text class="svgtxt sm" x="418" y="306" fill="#5f7186">（α_T = I_C / I_E = 0.99，β = α_T / (1 − α_T)）</text>
+      <text class="svgtxt sm" x="220" y="330" fill="#8b9bab">基极电流不是"推动"电子的动力，而是"允许"电子通过的开销。</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 9</span>
+      <b>电流预算：β = 99 是怎么来的。</b>
+      三条横条按真实比例绘制——注意 I<sub>B</sub> 那条细得几乎看不见，这正是它只占 1% 的直观含义。
+      电荷守恒要求 I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub>；而结构不对称（重掺杂发射区 + 极薄基区）
+      让 I<sub>B</sub> 尽可能小，两者的比值 β 因此可以做到 100 甚至更高。
+      <strong>所谓"电流放大"，就是把这条 1% 的细流当作控制端，去调制那条 99% 的主流。</strong>
+    </figcaption>
+  </figure>
+
+  <h4>链条二：电压放大 —— 指数响应</h4>
+
+  <p>
+    如果只有电流分配，BJT 还只是个电流放大器：想要 1 A 的集电极电流，就得喂 10 mA 的基极电流。
+    真正让"放大"变得惊人的，是第二条链条：<strong>I<sub>C</sub> 与 I<sub>B</sub> 都由同一个变量控制，
+    而且是指数关系</strong>。
+  </p>
+
+  <div class="eq">
+    <i>I</i><sub>C</sub> = <i>I</i><sub>S</sub> exp&#8203;(
+    <span class="frac"><span><i>V</i><sub>BE</sub></span><span><i>V</i><sub>T</sub></span></span> )，
+    &nbsp;&nbsp;&nbsp;
+    <i>I</i><sub>B</sub> = <span class="frac"><span><i>I</i><sub>S</sub></span><span><i>β</i></span></span>
+    exp&#8203;( <span class="frac"><span><i>V</i><sub>BE</sub></span><span><i>V</i><sub>T</sub></span></span> )
+    <span class="tag">9.1</span>
+  </div>
+
+  <p>
+    两者都是 V<sub>BE</sub> 的指数函数，比值恒为 β。这意味着<strong>电流增益不随工作点改变，
+    但电流的绝对大小对 V<sub>BE</sub> 极其敏感</strong>。在 300 K 下 V<sub>T</sub> = 25.85 mV：
+  </p>
+
+  <div class="eq">
+    <span class="frac"><span><i>I</i><sub>C</sub>(<i>V</i><sub>BE</sub> + 60 mV)</span><span><i>I</i><sub>C</sub>(<i>V</i><sub>BE</sub>)</span></span>
+    = <i>e</i><sup>60/25.85</sup> ≈ 10，
+    &nbsp;&nbsp;
+    <span class="frac"><span><i>I</i><sub>C</sub>(<i>V</i><sub>BE</sub> + 10 mV)</span><span><i>I</i><sub>C</sub>(<i>V</i><sub>BE</sub>)</span></span>
+    ≈ 1.47
+    <span class="tag">9.2 · 每 60 mV 十倍</span>
+  </div>
+
+  <p>
+    把这条曲线画出来，就得到了教科书上那条"曲棍球杆"。拖动下面的滑块，注意电流在开启电压附近
+    如何以几乎垂直的姿态起飞：
+  </p>
+
+  <div class="control">
+    <div class="ctl-head">
+      <div class="ctl-title">基极电压 V<sub>BE</sub> <span>拖动滑块，观察集电极电流的指数响应</span></div>
+      <div style="font-family:var(--mono);font-size:.95rem;color:var(--cyan)">V<sub>BE</sub> = <span id="vbeOut">0.600</span> V</div>
+    </div>
+    <input type="range" id="vbeSlider" min="0.46" max="0.66" step="0.002" value="0.6" aria-label="基极电压">
+    <div class="scale-row"><span>0.46 V</span><span>0.56 V</span><span>0.66 V</span></div>
+    <canvas id="gainCanvas" aria-label="BJT 转移特性曲线"></canvas>
+    <div class="readouts">
+      <div><div class="rl">集电极电流 I<sub>C</sub> / I<sub>C,max</sub></div><div class="rv" id="gRatio">—</div></div>
+      <div><div class="rl">结边注入 n<sub>p</sub>(x₁)</div><div class="rv amber" id="gInj">—</div></div>
+      <div><div class="rl">发射结势垒 q(V<sub>bi</sub> − V<sub>BE</sub>)</div><div class="rv green" id="gBar">—</div></div>
+      <div><div class="rl">V<sub>BE</sub> 每 +10 mV（与工作点无关）</div><div class="rv coral" id="gSens">×1.47</div></div>
+    </div>
+  </div>
+
+  <p class="npn-cap">
+    <span class="fno">图 10</span>
+    <b>转移特性：I<sub>C</sub> 对 V<sub>BE</sub> 的指数依赖。</b>
+    横轴是输入电压，纵轴是输出电流。注意曲线在 0.5 V 之前几乎贴着零轴，0.6 V 之后陡然上升——
+    这条曲线的斜率就是跨导 g<sub>m</sub> = dI<sub>C</sub>/dV<sub>BE</sub> = I<sub>C</sub>/V<sub>T</sub>，
+    它本身正比于工作电流，所以工作点越高、放大能力越强。
+    <strong>输入只要动几十毫伏，输出就能动几个数量级</strong>——这就是"放"字的全部含义。
+  </p>
+
+  <h4>两条链条合起来，才构成"放大"</h4>
+
+  <p>
+    单看电流增益 β，BJT 只是个电流中继器；单看指数曲线，它只是只二极管。
+    两者叠加之后才出现真正的放大：<strong>输入端是正偏结，动态电阻只有 V<sub>T</sub>/I<sub>B</sub>，很小；
+    输出端是反偏结，可以接上很大的负载电阻而不影响收集效率。</strong>
+    同一个 ΔI<sub>C</sub>，在输出端能撑起大得多的 ΔV。电压增益
+    <span class="sym">A</span><sub>v</sub> = g<sub>m</sub>R<sub>L</sub> 因此可以做到几十甚至上千倍——
+    而付出的代价，只是基极那一点点电流。
+  </p>
+
+  <div class="callout">
+    <span class="lab">放大的边界</span>
+    <p>
+      输出电流不能超过 V<sub>CC</sub>/R<sub>L</sub> 所允许的上限（<strong>饱和</strong>），
+      输入电压不能低于开启电压（<strong>截止</strong>），集电结反偏过高会<strong>击穿</strong>。
+      放大只发生在这三条边界围出的区域内——这正是"放大区"这个名字的来历。
+      回到模型里切换三个模式，你看到的正是这三个区域。
+    </p>
+  </div>
+</section>
+
+<!-- ============================ §10 ============================ -->
+<section class="chapter" id="s10">
+  <div class="ch-head">
+    <div class="ch-num">10</div>
+    <h2>四个非理想效应：教科书没画的那部分</h2>
+  </div>
+
+  <p class="lead">
+    前面九章把 BJT 画得太干净了：基区宽度固定、电流均匀铺满发射极、耗尽区只随偏压变化。
+    真实的器件不是这样。下面四个效应，全部源于同一件事——
+    <strong>基区的几何边界不是常数</strong>，它会被电流和电压推动。
+    它们也是"为什么必须用二维模型"的最好理由。
+  </p>
+
+  <h3>10.1 发射极电流集边效应</h3>
+
+  <p>
+    基极电流不是从正上方垂直流进基区的。它必须从两侧的基极接触出发，<strong>横向穿过基区</strong>，
+    才能到达发射结下方。基区很薄，薄层电阻却有几百 Ω/□，这段横向路径是一个实实在在的电阻。
+  </p>
+
+  <p>
+    横向电流在基区里产生压降，于是发射结各处的实际正偏压沿横向递减：
+    靠近基极接触的边缘正偏最强，发射极中心最弱。而电流密度对 <span class="sym">V</span><sub>BE</sub> 是指数的，
+    <mark>横向差 26 mV，电流就差 e 倍</mark>。结果是大电流下电流几乎全部从发射极边缘流过。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 900 430" role="img" aria-label="发射极电流集边效应：电流挤向发射极边缘">
+      <defs>
+        <pattern id="hx1" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(130,175,215,.18)" stroke-width="1"/>
+        </pattern>
+        <linearGradient id="jfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(90,169,255,.45)"/>
+          <stop offset="100%" stop-color="rgba(90,169,255,.10)"/>
+        </linearGradient>
+        <marker id="aB" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto">
+          <path d="M0,7 L4,0 L8,7" fill="none" stroke="#ff8a72" stroke-width="1.6"/>
+        </marker>
+        <marker id="aE" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto">
+          <path d="M0,7 L4,0 L8,7" fill="none" stroke="#6aa9ff" stroke-width="1.6"/>
+        </marker>
+      </defs>
+
+      <!-- 衬底 -->
+      <rect x="100" y="228" width="700" height="42" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <text class="svgtxt sm" x="116" y="254" fill="#7d93a8">n 集电区（衬底）</text>
+
+      <!-- p 基区 -->
+      <rect x="100" y="118" width="700" height="110" fill="rgba(255,138,114,.10)" stroke="#2f4356"/>
+      <text class="svgtxt sm" x="116" y="136" fill="#c08a7d">p 基区</text>
+
+      <!-- n+ 发射区 -->
+      <rect x="330" y="118" width="240" height="42" fill="rgba(90,169,255,.22)" stroke="#6aa9ff"/>
+      <text class="svgtxt sm" x="450" y="144" fill="#a9d0ff" text-anchor="middle">n⁺ 发射区</text>
+
+      <!-- 发射结耗尽 -->
+      <rect x="320" y="160" width="260" height="20" fill="url(#hx1)" stroke="#3b5570" stroke-dasharray="3 3"/>
+
+      <!-- 电极 -->
+      <rect x="120" y="106" width="90" height="12" fill="#8fa6bb"/>
+      <rect x="690" y="106" width="90" height="12" fill="#8fa6bb"/>
+      <rect x="400" y="106" width="100" height="12" fill="#c2d0dd"/>
+      <text class="svgtxt sm" x="450" y="98" text-anchor="middle" fill="#c2d0dd">E 发射极</text>
+      <text class="svgtxt sm" x="165" y="98" text-anchor="middle" fill="#9fb4c6">B 基极</text>
+      <text class="svgtxt sm" x="735" y="98" text-anchor="middle" fill="#9fb4c6">B 基极</text>
+
+      <!-- 基极横向电流：电流越大，箭头越粗（这是集边的起因） -->
+      <line x1="215" y1="182" x2="325" y2="182" stroke="#ff8a72" stroke-width="1.8" marker-end="url(#aB)">
+        <animate attributeName="stroke-width" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="1.1;3.0;3.0;1.1"/>
+      </line>
+      <line x1="685" y1="182" x2="575" y2="182" stroke="#ff8a72" stroke-width="1.8" marker-end="url(#aB)">
+        <animate attributeName="stroke-width" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="1.1;3.0;3.0;1.1"/>
+      </line>
+      <text class="svgtxt sm" x="270" y="200" text-anchor="middle" fill="#ffa994">I_B 横向</text>
+      <text class="svgtxt sm" x="630" y="200" text-anchor="middle" fill="#ffa994">I_B 横向</text>
+      <text class="svgtxt sm" x="270" y="216" text-anchor="middle" fill="#7d93a8">压降 R□·I_B</text>
+
+      <!-- 发射电流箭头：电流增大时边缘变长、中心变短 -->
+      <line x1="345" y1="166" x2="345" y2="222" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;222;222;206"/></line>
+      <line x1="365" y1="166" x2="365" y2="204" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;204;204;206"/></line>
+      <line x1="405" y1="166" x2="405" y2="182" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;182;182;206"/></line>
+      <line x1="450" y1="166" x2="450" y2="178" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;178;178;206"/></line>
+      <line x1="495" y1="166" x2="495" y2="182" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;182;182;206"/></line>
+      <line x1="535" y1="166" x2="535" y2="204" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;204;204;206"/></line>
+      <line x1="555" y1="166" x2="555" y2="222" stroke="#6aa9ff" stroke-width="2.4" marker-end="url(#aE)"><animate attributeName="y2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="206;222;222;206"/></line>
+
+      <!-- 横向的 V_BE(x)：只凹陷一点点，却是 J(x) 剧变的直接原因 -->
+      <path d="M330,300 Q390,318 450,320 Q510,318 570,300" fill="none" stroke="#ffc857" stroke-width="1.7" stroke-dasharray="6 4">
+        <animate attributeName="d" dur="9s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.38;0.62;1"
+          values="M330,300 Q390,318 450,320 Q510,318 570,300;M330,300 Q390,300 450,300 Q510,300 570,300;M330,300 Q390,300 450,300 Q510,300 570,300;M330,300 Q390,318 450,320 Q510,318 570,300"/>
+      </path>
+      <line x1="330" y1="372" x2="570" y2="372" stroke="#2b3c4d"/>
+      <line x1="330" y1="292" x2="330" y2="372" stroke="#2b3c4d"/>
+      <text class="svgtxt sm" x="576" y="302" fill="#ffc857">V_BE(x) 横向压降</text>
+      <text class="svgtxt sm" x="576" y="320" fill="#6aa9ff">J_E(x) 电流密度</text>
+      <path d="M330,372 L330,292 Q352,320 372,340 Q392,352 450,356 Q508,352 528,340 Q548,320 570,292 L570,372 Z"
+            fill="url(#jfill)" stroke="#6aa9ff" stroke-width="1.8">
+        <animate attributeName="d" dur="9s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.38;0.62;1"
+          values="M330,372 L330,292 Q352,320 372,340 Q392,352 450,356 Q508,352 528,340 Q548,320 570,292 L570,372 Z;M330,372 L330,292 Q352,292 372,292 Q392,292 450,292 Q508,292 528,292 Q548,292 570,292 L570,372 Z;M330,372 L330,292 Q352,292 372,292 Q392,292 450,292 Q508,292 528,292 Q548,292 570,292 L570,372 Z;M330,372 L330,292 Q352,320 372,340 Q392,352 450,356 Q508,352 528,340 Q548,320 570,292 L570,372 Z"/>
+      </path>
+      <text class="svgtxt sm" x="450" y="392" text-anchor="middle" fill="#7d93a8">沿发射极宽度 x 的电流密度 J_E(x)</text>
+      <text class="svgtxt sm" x="322" y="290" text-anchor="end" fill="#6aa9ff">J_max</text>
+      <text class="svgtxt sm" x="450" y="342" text-anchor="middle" fill="#5f7186">
+        中心仅约 12%<animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </text>
+      <line x1="450" y1="356" x2="450" y2="372" stroke="#5f7186" stroke-dasharray="3 3"/>
+
+      <!-- 有效宽度标注 -->
+      <line x1="330" y1="282" x2="378" y2="282" stroke="#ffc857" stroke-width="2"/>
+      <line x1="522" y1="282" x2="570" y2="282" stroke="#ffc857" stroke-width="2"/>
+      <text class="svgtxt sm" x="450" y="274" text-anchor="middle" fill="#ffc857">
+        有效导电区只剩两侧边缘<animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </text>
+      <text class="svgtxt sm" x="60" y="292" fill="#4f6577">◀ 电流由小到大循环 ▶</text>
+      <text class="svgtxt sm" x="450" y="412" text-anchor="middle" fill="#8b9bab">V_BE 沿横向只差几十毫伏，J 却差一个数量级 —— 因为 J ∝ exp(V_BE/V_T)</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 11</span>
+      <b>发射极电流集边效应（动画循环播放）。</b>动画先把<strong>基极横向电流</strong>加粗——它流过基区薄层电阻，
+      产生压降，于是发射结各处实际承受的 V<sub>BE</sub> 沿横向递减，<strong>图中那条虚线就是 V<sub>BE</sub>(x)</strong>。
+      虚线只轻微凹陷，实线的电流密度却塌下去一大截：因为 J ∝ exp(V<sub>BE</sub>/V<sub>T</sub>)，
+      几十毫伏的落差就足以让电流差一个数量级。这就是"边缘亮、中心暗"的全部原因。
+      分布形状为 J<sub>E</sub>(x) = J<sub>E0</sub>/(1 + x/L<sub>T</sub>)²，
+      集边长度 L<sub>T</sub> = √(V<sub>T</sub>/ρ<sub>□B</sub>J<sub>E0</sub>) 随电流增大而缩短。
+      后果：大电流下有效发射区宽度收缩、β 下降、局部发热形成热斑，是功率器件必须用多发射极条的原因。
+    </figcaption>
+  </figure>
+
+  <h3>10.2 基区扩展效应（Kirk 效应）</h3>
+
+  <p>
+    集电结的耗尽区里，空间电荷本应只由电离的施主离子提供。但穿行其间的电子也是电荷——
+    只是平时数量太少，可以忽略。当集电极电流密度上升到
+  </p>
+
+  <div class="eq">
+    <i>J</i><sub>K</sub> = <i>q v</i><sub>sat</sub><i>N</i><sub>C</sub>
+    &nbsp;≈&nbsp; 1.6×10<sup>4</sup> A/cm²
+    <span class="note-inline">（N<sub>C</sub> = 10<sup>16</sup> cm<sup>−3</sup>，v<sub>sat</sub> ≈ 10<sup>7</sup> cm/s）</span>
+    <span class="tag">10.1</span>
+  </div>
+
+  <p>
+    时，电子的负电荷已经抵消掉集电区的正电荷。净空间电荷反号，电场分布崩溃，集电结的
+    <strong>有效位置被推向集电极</strong>——基区的边界跟着往外挪，这就是"基区扩展"。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 900 490" role="img" aria-label="基区扩展效应：大电流下有效基区变宽">
+      <defs>
+        <pattern id="hx2" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(130,175,215,.18)" stroke-width="1"/>
+        </pattern>
+      </defs>
+
+      <!-- (a) 低电流 -->
+      <text class="svgtxt mono" x="60" y="52" fill="#4f6577">(a) 低电流　J &lt; J_K</text>
+      <rect x="60" y="64" width="240" height="86" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="64" width="180" height="86" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="64" width="360" height="86" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <rect x="415" y="64" width="131" height="86" fill="url(#hx2)" stroke="#3b5570" stroke-dasharray="3 3"/>
+      <text class="svgtxt sm" x="72" y="84" fill="#8fbcff">N⁺ 发射区</text>
+      <text class="svgtxt sm" x="312" y="84" fill="#ffa994">P 基区</text>
+      <text class="svgtxt sm" x="640" y="84" fill="#8fbcff">N 集电区</text>
+      <text class="svgtxt sm" x="480" y="112" text-anchor="middle" fill="#93a7b9">耗尽区</text>
+      <!-- 基区宽度标注 -->
+      <line x1="322" y1="160" x2="415" y2="160" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="322" y1="154" x2="322" y2="166" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="415" y1="154" x2="415" y2="166" stroke="#ffc857" stroke-width="1.6"/>
+      <text class="svgtxt sm" x="368" y="180" text-anchor="middle" fill="#ffc857">W_B</text>
+
+      <!-- (b) 电流增大 → Kirk -->
+      <text class="svgtxt mono" x="60" y="222" fill="#4f6577">(b) 电流超过 J_K 后　基区被推进集电区（循环播放）</text>
+      <rect x="60" y="234" width="240" height="86" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="234" width="180" height="86" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="234" width="360" height="86" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <!-- 原耗尽区边界参考线 -->
+      <line x1="415" y1="234" x2="415" y2="320" stroke="#5f7186" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/>
+      <text class="svgtxt sm" x="415" y="228" text-anchor="middle" fill="#5f7186">↓ 原边界</text>
+      <!-- 扩展部分 -->
+      <rect x="480" y="234" width="40" height="86" fill="rgba(255,138,114,.32)" stroke="#ff8a72" stroke-dasharray="4 3">
+        <animate attributeName="width" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;40;40;0"/>
+      </rect>
+      <rect x="415" y="234" width="131" height="86" fill="url(#hx2)" stroke="#3b5570" stroke-dasharray="3 3">
+        <animate attributeName="x" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="415;520;520;415"/>
+        <animate attributeName="width" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="131;26;26;131"/>
+      </rect>
+      <text class="svgtxt sm" x="72" y="254" fill="#8fbcff">N⁺ 发射区</text>
+      <text class="svgtxt sm" x="312" y="254" fill="#ffa994">P 基区</text>
+      <text class="svgtxt sm" x="700" y="254" fill="#8fbcff">N 集电区</text>
+      <text class="svgtxt sm" x="500" y="300" text-anchor="middle" fill="#ffa994">
+        扩展的基区<animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </text>
+      <path d="M628,296 L542,268" fill="none" stroke="#93a7b9" stroke-width="1" stroke-dasharray="3 3">
+        <animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </path>
+      <text class="svgtxt sm" x="634" y="300" fill="#93a7b9">
+        耗尽区被压窄<animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </text>
+
+      <line x1="322" y1="330" x2="415" y2="330" stroke="#ffc857" stroke-width="1.6">
+        <animate attributeName="x2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="415;520;520;415"/>
+      </line>
+      <line x1="322" y1="324" x2="322" y2="336" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="415" y1="324" x2="415" y2="336" stroke="#ffc857" stroke-width="1.6">
+        <animate attributeName="x1" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="415;520;520;415"/>
+        <animate attributeName="x2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="415;520;520;415"/>
+      </line>
+      <text class="svgtxt sm" x="421" y="350" text-anchor="middle" fill="#ffc857">
+        W_B → 2.1 W_B<animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="0;1;1;0"/>
+      </text>
+
+      <text class="svgtxt sm" x="60" y="378" fill="#8b9bab">渡越时间 τ_F = W_B²/(2D) 随宽度平方增长 → f_T 断崖式下降</text>
+
+      <!-- 因果插图：耗尽区内的空间电荷为什么会反号 -->
+      <text class="svgtxt sm" x="520" y="344" fill="#93a7b9">集电结耗尽区内的空间电荷　ρ = q(N_D − n)</text>
+      <line x1="560" y1="428" x2="830" y2="428" stroke="#2b3c4d"/>
+      <!-- 施主正电荷（与电流无关，恒定） -->
+      <rect x="580" y="392" width="42" height="36" fill="rgba(106,169,255,.30)" stroke="#6aa9ff"/>
+      <text class="svgtxt sm" x="601" y="446" text-anchor="middle" fill="#8fbcff">+qN_D</text>
+      <!-- 渡越电子的负电荷（随电流增大） -->
+      <rect x="676" y="422" width="42" height="6" fill="rgba(255,138,114,.35)" stroke="#ff8a72">
+        <animate attributeName="y" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="422;356;356;422"/>
+        <animate attributeName="height" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="6;72;72;6"/>
+      </rect>
+      <text class="svgtxt sm" x="697" y="446" text-anchor="middle" fill="#ffa994">−qn</text>
+      <!-- 施主电平参考线 -->
+      <line x1="560" y1="392" x2="830" y2="392" stroke="#ffc857" stroke-width="1" stroke-dasharray="5 4" opacity=".75"/>
+      <text class="svgtxt sm" x="762" y="386" fill="#ffc857">施主电平</text>
+      <!-- 反号判定 -->
+      <text class="svgtxt sm" x="762" y="412" fill="#ffc857" opacity="0">净电荷反号
+        <animate attributeName="opacity" dur="9s" repeatCount="indefinite" keyTimes="0;0.40;0.62;1" values="0;1;1;0"/>
+      </text>
+      <text class="svgtxt sm" x="520" y="472" fill="#8b9bab">电流变大 → 渡越电子变多 → 负电荷压过施主电荷 → 净电荷反号 → 电场崩塌 → 基区边界被推向集电区</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 12</span>
+      <b>基区扩展效应（Kirk 效应，动画循环播放）。</b>电流密度超过 J<sub>K</sub> 后，渡越电子的空间电荷压过集电区的施主电荷，
+      净空间电荷反号，耗尽区收缩到集电极一侧，有效基区向集电区"扩展"。
+      <strong>右下角的插图是本效应的因果核心</strong>：施主正电荷 qN<sub>D</sub> 固定不变，
+      渡越电子的负电荷 qn 随电流长高，越过施主电平那一刻净电荷 ρ = q(N<sub>D</sub> − n) 反号，电场随之崩塌。
+      由于渡越时间正比于基区宽度的<strong>平方</strong>，f<sub>T</sub> 会在这个电流点上出现陡然下跌——
+      这是功率 BJT 与 HBT 设计中最需要规避的现象之一，对策是提高集电区掺杂或降低电流密度。
+    </figcaption>
+  </figure>
+
+  <h3>10.3 基区宽度调制效应（厄利效应）</h3>
+
+  <p>
+    这一条最容易理解，后果却最深远：<strong>增大 V<sub>CB</sub>，集电结耗尽区变宽，而它向基区一侧的扩展
+    会吃掉一部分中性基区</strong>。基区变窄，少子浓度梯度变陡，集电极电流随之上升——即使 V<sub>BE</sub> 一动不动。
+  </p>
+
+  <div class="eq">
+    <i>I</i><sub>C</sub> ≈
+    <span class="frac"><span><i>qD</i><sub>n</sub><i>n</i><sub>p0</sub></span><span><i>W</i><sub>B</sub>(<i>V</i><sub>CB</sub>)</span></span>
+    exp&#8203;( <span class="frac"><span><i>V</i><sub>BE</sub></span><span><i>V</i><sub>T</sub></span></span> )
+    <span class="tag">10.2</span>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 900 480" role="img" aria-label="基区宽度调制效应：集电结耗尽区吃掉中性基区">
+      <defs>
+        <pattern id="hx3" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(130,175,215,.18)" stroke-width="1"/>
+        </pattern>
+      </defs>
+
+      <!-- (a) V_CB 小 -->
+      <text class="svgtxt mono" x="60" y="44" fill="#4f6577">(a) V_CB = 1 V</text>
+      <rect x="60" y="56" width="240" height="80" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="56" width="180" height="80" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="56" width="360" height="80" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <rect x="428" y="56" width="105" height="80" fill="url(#hx3)" stroke="#3b5570" stroke-dasharray="3 3"/>
+      <text class="svgtxt sm" x="312" y="76" fill="#ffa994">P 基区</text>
+      <text class="svgtxt sm" x="70" y="76" fill="#8fbcff">N⁺</text>
+      <line x1="322" y1="148" x2="428" y2="148" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="322" y1="142" x2="322" y2="154" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="428" y1="142" x2="428" y2="154" stroke="#ffc857" stroke-width="1.6"/>
+      <text class="svgtxt sm" x="375" y="168" text-anchor="middle" fill="#ffc857">W_B1</text>
+
+      <!-- (b) V_CB 增大 -->
+      <text class="svgtxt mono" x="60" y="214" fill="#4f6577">(b) V_CB 由 1 V 增到 5 V　耗尽区向基区扩张（循环播放）</text>
+      <rect x="60" y="226" width="240" height="80" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="226" width="180" height="80" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="226" width="360" height="80" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <line x1="428" y1="226" x2="428" y2="306" stroke="#5f7186" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/>
+      <rect x="385" y="226" width="190" height="80" fill="url(#hx3)" stroke="#3b5570" stroke-dasharray="3 3">
+        <animate attributeName="x" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="428;385;385;428"/>
+        <animate attributeName="width" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="105;190;190;105"/>
+      </rect>
+      <text class="svgtxt sm" x="312" y="246" fill="#ffa994">P 基区</text>
+      <text class="svgtxt sm" x="70" y="246" fill="#8fbcff">N⁺</text>
+      <line x1="322" y1="318" x2="385" y2="318" stroke="#ffc857" stroke-width="1.6">
+        <animate attributeName="x2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="428;385;385;428"/>
+      </line>
+      <line x1="322" y1="312" x2="322" y2="324" stroke="#ffc857" stroke-width="1.6"/>
+      <line x1="385" y1="312" x2="385" y2="324" stroke="#ffc857" stroke-width="1.6">
+        <animate attributeName="x1" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="428;385;385;428"/>
+        <animate attributeName="x2" dur="9s" repeatCount="indefinite" keyTimes="0;0.38;0.62;1" values="428;385;385;428"/>
+      </line>
+      <text class="svgtxt sm" x="353" y="338" text-anchor="middle" fill="#ffc857">W_B 变窄 → I_C 上升</text>
+
+      <!-- 压缩箭头 -->
+      <path d="M420,120 L420,196" fill="none" stroke="#ff8a72" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <text class="svgtxt sm" x="430" y="150" fill="#ffa994">V_CB ↑ → 耗尽区变宽</text>
+      <text class="svgtxt sm" x="430" y="170" fill="#ffc857">W_B ↓ → I_C ↑</text>
+
+      <!-- 输出特性插图 -->
+      <text class="svgtxt mono" x="60" y="382" fill="#4f6577">输出特性：每条曲线都有正斜率</text>
+      <line x1="120" y1="452" x2="440" y2="452" stroke="#2b3c4d"/>
+      <line x1="120" y1="368" x2="120" y2="452" stroke="#2b3c4d"/>
+      <text class="svgtxt sm" x="448" y="456" fill="#7d93a8">V_CE</text>
+      <text class="svgtxt sm" x="112" y="372" text-anchor="end" fill="#7d93a8">I_C</text>
+      <g stroke="#5aa9ff" stroke-width="1.8" fill="none">
+        <line x1="128" y1="436" x2="430" y2="426"/>
+        <line x1="128" y1="410" x2="430" y2="397"/>
+        <line x1="128" y1="384" x2="430" y2="368"/>
+      </g>
+      <line x1="128" y1="436" x2="58" y2="442" stroke="#5aa9ff" stroke-width="1.4" stroke-dasharray="4 4"/>
+      <text class="svgtxt sm" x="60" y="470" fill="#ffc857">外推到 −V_A 才归零（V_A ≈ 50–200 V，图中远未按比例）</text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 13</span>
+      <b>基区宽度调制（厄利效应，动画循环播放）。</b>
+      集电结耗尽区随 V<sub>CB</sub> 变宽，向基区一侧吃掉中性基区，W<sub>B</sub> 由 W<sub>B1</sub> 缩到 W<sub>B2</sub>。
+      因为 I<sub>C</sub> ∝ 1/W<sub>B</sub>，输出特性曲线因此带有正斜率，把各条曲线外推会交于横轴上的
+      −V<sub>A</sub>（厄利电压，典型 50–200 V）。这个效应<strong>限制了小信号电压增益的上限</strong>：
+      g<sub>m</sub>r<sub>o</sub> = V<sub>A</sub>/V<sub>T</sub>，与 β 无关。
+    </figcaption>
+  </figure>
+
+  <h3>10.4 基区穿通</h3>
+
+  <p>
+    把 10.3 推到极端：如果基区本来就极薄、集电区掺杂又低，那么 V<sub>CB</sub> 升高时集电结耗尽区会一路向基区内推进。
+    当它与发射结的耗尽区<strong>相接</strong>时，中性基区彻底消失，两个势垒连成一片——
+    发射极与集电极之间只剩一个由耗尽区电场决定的势垒，基极再也无法控制电流。这就是穿通。
+  </p>
+
+  <p>
+    穿通不是雪崩击穿（那是靠碰撞电离），而是纯粹的<strong>几何失效</strong>：
+    基区这块"缓冲垫"被耗尽了。所以它的发生电压与 V<sub>CB</sub> 有关、与基区厚度的<strong>平方</strong>成正比，
+    却几乎与温度无关——这一点常被用来在实验中区分穿通与雪崩。
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 900 370" role="img" aria-label="基区穿通：耗尽区相接，基区失去控制">
+      <defs>
+        <pattern id="hx4" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="7" stroke="rgba(130,175,215,.18)" stroke-width="1"/>
+        </pattern>
+        <marker id="aP" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,1 L8,4.5 L0,8" fill="none" stroke="#ff8a72" stroke-width="1.5"/>
+        </marker>
+      </defs>
+
+      <!-- (a) -->
+      <text class="svgtxt mono" x="60" y="40" fill="#4f6577">(a) 正常　V_CB 较低</text>
+      <rect x="60" y="52" width="240" height="70" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="52" width="180" height="70" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="52" width="360" height="70" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <rect x="296" y="52" width="26" height="70" fill="url(#hx4)" stroke="#3b5570" stroke-dasharray="2 2"/>
+      <rect x="415" y="52" width="131" height="70" fill="url(#hx4)" stroke="#3b5570" stroke-dasharray="2 2"/>
+      <text class="svgtxt sm" x="70" y="90" fill="#8fbcff">N⁺</text>
+      <text class="svgtxt sm" x="350" y="90" fill="#ffa994">P 基区</text>
+      <text class="svgtxt sm" x="620" y="90" fill="#8fbcff">N 集电区</text>
+      <line x1="322" y1="136" x2="415" y2="136" stroke="#ffc857" stroke-width="1.6"/>
+      <text class="svgtxt sm" x="368" y="152" text-anchor="middle" fill="#ffc857">中性基区</text>
+
+      <!-- (b) V_CB 继续增大 → 穿通 -->
+      <text class="svgtxt mono" x="60" y="186" fill="#4f6577">(b) V_CB 继续增大　耗尽区推进，直到穿过整个基区（循环播放）</text>
+      <rect x="60" y="198" width="240" height="80" fill="rgba(90,169,255,.13)" stroke="#2f4356"/>
+      <rect x="300" y="198" width="180" height="80" fill="rgba(255,138,114,.13)" stroke="#2f4356"/>
+      <rect x="480" y="198" width="360" height="80" fill="rgba(90,169,255,.10)" stroke="#2f4356"/>
+      <rect x="296" y="198" width="26" height="80" fill="url(#hx4)" stroke="#3b5570" stroke-dasharray="2 2"/>
+      <line x1="415" y1="198" x2="415" y2="278" stroke="#5f7186" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/>
+      <line x1="322" y1="198" x2="322" y2="278" stroke="#ffc857" stroke-width="1" stroke-dasharray="2 4" opacity=".65"/>
+      <text class="svgtxt sm" x="415" y="292" text-anchor="middle" fill="#5f7186">起始边界</text>
+      <text class="svgtxt sm" x="322" y="292" text-anchor="middle" fill="#ffc857">发射结边界</text>
+      <rect x="415" y="198" width="131" height="80" fill="url(#hx4)" stroke="#3b5570" stroke-dasharray="2 2">
+        <animate attributeName="x" dur="10s" repeatCount="indefinite" keyTimes="0;0.55;0.72;1" values="415;290;290;415"/>
+        <animate attributeName="width" dur="10s" repeatCount="indefinite" keyTimes="0;0.55;0.72;1" values="131;350;350;131"/>
+      </rect>
+      <text class="svgtxt sm" x="70" y="242" fill="#8fbcff">N⁺</text>
+      <text class="svgtxt sm" x="330" y="242" fill="#ffa994">
+        P 基区<animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.42;0.62;1" values="1;1;0;0"/>
+      </text>
+      <text class="svgtxt sm" x="720" y="242" fill="#8fbcff">N 集电区</text>
+
+      <line x1="292" y1="316" x2="636" y2="316" stroke="#ffc857" stroke-width="2.4" marker-end="url(#aP)" opacity="0">
+        <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.58;0.72;1" values="0;0;1;0"/>
+      </line>
+      <text class="svgtxt sm" x="450" y="344" text-anchor="middle" fill="#ffc857" opacity="0">
+        穿通：耗尽区合并，电子直接穿过，基极失去控制
+        <animate attributeName="opacity" dur="10s" repeatCount="indefinite" keyTimes="0;0.58;0.72;1" values="0;0;1;0"/>
+      </text>
+    </svg>
+    <figcaption>
+      <span class="fno">图 14</span>
+      <b>基区穿通（动画循环播放）。</b>V<sub>CB</sub> 增大使集电结耗尽区一路推进，与发射结耗尽区相接后中性基区消失。
+      此时发射极与集电极之间的势垒由耗尽区电场直接决定，基极电流失去控制作用，I<sub>C</sub> 急剧上升。
+      穿通电压近似正比于 N<sub>B</sub>W<sub>B</sub>²，与温度几乎无关——这是它与雪崩击穿最实用的区别。
+    </figcaption>
+  </figure>
+
+  <h3>10.5 四个效应其实是一件事</h3>
+
+  <p>
+    把四个效应并排看，会发现它们的共同点非常明确：<strong>基区的有效边界不是版图上画出来的那条线，
+    而是由外加电压和通过它的电流共同决定的</strong>。
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>表 6 · 四个效应的触发条件与后果对照</caption>
+      <thead>
+        <tr><th>效应</th><th>触发条件</th><th>基区发生什么</th><th>直接后果</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="k">电流集边</td>
+          <td>大电流 + 基区薄层电阻</td>
+          <td>横向压降使 V<sub>BE</sub> 不均匀</td>
+          <td>有效发射区收缩，β↓，局部热斑</td>
+        </tr>
+        <tr>
+          <td class="k">基区扩展</td>
+          <td>J<sub>C</sub> &gt; qv<sub>sat</sub>N<sub>C</sub></td>
+          <td>边界被推向集电区，W<sub>B</sub> 变宽</td>
+          <td>渡越时间↑，f<sub>T</sub> 断崖式下降</td>
+        </tr>
+        <tr>
+          <td class="k">宽度调制</td>
+          <td>V<sub>CB</sub> 增大</td>
+          <td>耗尽区侵入，中性基区变窄</td>
+          <td>I<sub>C</sub> 随 V<sub>CE</sub> 上升，r<sub>o</sub> 有限</td>
+        </tr>
+        <tr>
+          <td class="k">基区穿通</td>
+          <td>基区极薄 + 高 V<sub>CB</sub></td>
+          <td>中性基区归零，两耗尽区合并</td>
+          <td>基极失控，I<sub>C</sub> 暴增</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    注意前两个由<strong>电流</strong>驱动，后两个由<strong>电压</strong>驱动；前两个让基区"变宽/变得不均匀"，
+    后两个让基区"变窄"。它们是一对反向的力，器件设计的全部功夫，就是在给定的电流与电压范围内
+    找到一个让两边都不越界的折中——这也是为什么功率 BJT 的基区厚度、掺杂与版图指状结构必须一起优化，
+    而不能各自独立地"越大越好"。
+  </p>
+
+  <div class="callout deep">
+    <span class="lab">与第 9 章模型的对应</span>
+    <p>
+      第 9 章的粒子模型里，基区宽度是被写死的常数——那正是"教科书器件"。
+      本章四个效应全部来自"基区宽度会动"这一件事。把它们画进二维剖面就能看清：
+      <strong>一维分析给出工作点，二维分析才给出边界。</strong>
+    </p>
+    <p>
+      而那四个效应现在也能在模型里直接看到：切到<strong>集边 / Kirk / 厄利 / 穿通</strong>四个模式，
+      同一个粒子引擎会改变注入的横向分布或基区边界，让 α、集电区收集速率跟着变。
+      第 10 章的静态图讲"是什么"，模型里的四个模式演示"怎么发生"。
+    </p>
+  </div>
+</section>
+
+<!-- ============================ §11 ============================ -->
+<section class="chapter" id="s11">
+  <div class="ch-head">
+    <div class="ch-num">11</div>
+    <h2>四个常见误解的澄清</h2>
+  </div>
+
+  <p class="lead">
+    这一章不是补充新知识，而是拆掉几个几乎人人都会踩的坑。它们之所以顽固，
+    是因为每一个都"看起来很像对的"。
+  </p>
+
+  <div class="callout warn">
+    <span class="lab">误解一</span>
+    <p><strong>"耗尽区里没有载流子。"</strong></p>
+    <p>
+      耗尽区只是"载流子浓度远低于电离杂质浓度"，不是真空。在结中心，电子与空穴浓度都降到
+      <span class="sym">n</span><sub>i</sub> 量级（约 10<sup>10</sup> cm<sup>−3</sup>），比两侧少子还高。
+      这个残留浓度正是反偏产生电流的来源——若真的是零，就无从"产生"了。
+    </p>
+  </div>
+
+  <div class="callout warn">
+    <span class="lab">误解二</span>
+    <p><strong>"正偏压把势垒完全抵消了，所以电流畅通。"</strong></p>
+    <p>
+      正偏只是把势垒从 <span class="sym">qV</span><sub>bi</sub> 降到 <span class="sym">q</span>(<span class="sym">V</span><sub>bi</sub>−<span class="sym">V</span>)，
+      在开启电压附近仍有约 0.1 eV 的势垒存在。真正让电流上升的，不是势垒消失了，
+      而是<strong>能越过残余势垒的载流子数量按指数增加</strong>。即使势垒只降低 60 mV，越过去的载流子就多一倍。
+    </p>
+  </div>
+
+  <div class="callout warn">
+    <span class="lab">误解三</span>
+    <p><strong>"费米能级就是电子占据的那个能级。"</strong></p>
+    <p>
+      费米能级是一个<strong>统计量</strong>，不是任何电子的实际能量。它可以在禁带中间，也可以进入导带或价带（简并半导体）。
+      它的唯一确定含义是：<span class="sym">f</span>(<span class="sym">E</span><sub>F</sub>) = 1/2，以及"加入一个电子所需的自由能"。
+      把 <span class="sym">E</span><sub>F</sub> 理解为"水位"是恰当的——水位是一个整体属性，不是水分子的属性。
+    </p>
+  </div>
+
+  <div class="callout warn">
+    <span class="lab">误解四</span>
+    <p><strong>"载流子浓度高的地方一定向浓度低的地方流，所以 PN 结会一直有电流。"</strong></p>
+    <p>
+      扩散不是唯一的输运机制。浓度梯度建立起来的同时，也建立起了电场；电场产生的漂移恰好反向。
+      最终的稳态由<strong>电化学势的梯度</strong>决定，而不是由浓度梯度单独决定。
+      在热平衡下，电化学势处处相等，所以净电流为零——哪怕浓度相差十二个数量级。
+    </p>
+  </div>
+</section>
+
+<!-- ============================ §12 ============================ -->
+<section class="chapter" id="s12">
+  <div class="ch-head">
+    <div class="ch-num">12</div>
+    <h2>要点总结</h2>
+  </div>
+
+  <p class="lead">
+    如果只记住十句话，应该是这十句。
+  </p>
+
+  <ol class="keypoints">
+    <li><b>质量作用定律是全部讨论的支点。</b><span class="sym">np</span> = <span class="sym">n</span><sub>i</sub><sup>2</sup> 锁定的是<strong>乘积</strong>，不是各自的浓度。掺杂改变的是一种载流子，另一种则被反比锁定。</li>
+    <li><b>产生与复合是一对可逆过程。</b>热平衡时二者严格抵消（细致平衡）；偏离平衡时，净复合率正比于 <span class="sym">np</span> − <span class="sym">n</span><sub>i</sub><sup>2</sup>，这个差值就是"离平衡有多远"的度量。</li>
+    <li><b>硅中的复合主要经由缺陷能级（SRH）完成。</b>辐射复合在间接带隙材料中概率极低——这正是硅不能做高效发光器件的根本原因。</li>
+    <li><b>费米能级是化学势，不是电子的能量。</b>它决定占据概率，其位置随掺杂移动，随温度上升向禁带中央回归。</li>
+    <li><b>热平衡的判据是费米能级处处水平。</b>因为电流正比于电化学势的梯度。这是检验任何能带图的第一标准。</li>
+    <li><b>能带弯曲与费米能级水平并不矛盾。</b>前者描述静电势，后者描述无净电流。二者共存，恰恰是"有电场、无电流"的图形化表达。</li>
+    <li><b>PN 结的形成是扩散自我终止的过程。</b>扩散留下固定离子 → 产生电场 → 电场产生反向漂移 → 漂移增强到与扩散抵消 → 系统稳定。没有任何外部干预。</li>
+    <li><b>内建电场不是电源。</b>它只阻止载流子流失，不对外做功。热平衡下它的漂移电流与扩散电流精确抵消，净电流为零。</li>
+    <li><b>多子维持电中性，少子决定电流。</b>正偏时注入的少子在中性区按 <span class="sym">L</span> = √(<span class="sym">Dτ</span>) 的特征长度扩散衰减，这段"少子扩散区"才是电流的真正来源。</li>
+    <li><b>非平衡时费米能级分裂为两条准费米能级。</b><span class="sym">E</span><sub>Fn</sub> − <span class="sym">E</span><sub>Fp</sub> = <span class="sym">qV</span>；正偏时 <span class="sym">np</span> &gt; <span class="sym">n</span><sub>i</sub><sup>2</sup> 净复合，反偏时 <span class="sym">np</span> &lt; <span class="sym">n</span><sub>i</sub><sup>2</sup> 净产生。整条肖克利方程都长在这个分裂上。</li>
+  </ol>
+
+  <div class="card" style="margin-top:38px">
+    <h4><span class="dot"></span>一句话总结</h4>
+    <p style="font-size:1.03rem;color:#cfdde9;line-height:1.95">
+      PN 结是一个<strong>自我稳定的浓度梯度结构</strong>：扩散制造了电场，电场又阻止了扩散，
+      两者在每一个位置上精确抵消。费米能级水平，是这个平衡的签名；
+      而一旦有外加电压把这个签名撕开一道 <span class="sym">qV</span> 的口子，
+      载流子就会以指数级的不对称性涌过——这就是整流的全部。
+    </p>
+  </div>
+
+  <h3>符号表</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>符号</th><th>含义</th><th class="num">本页取值</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="k"><span class="sym">n</span><sub>i</sub></td><td>本征载流子浓度</td><td class="num">1.0×10<sup>10</sup> cm<sup>−3</sup></td></tr>
+        <tr><td class="k"><span class="sym">N</span><sub>c</sub> / <span class="sym">N</span><sub>v</sub></td><td>导带 / 价带有效状态密度</td><td class="num">2.8×10<sup>19</sup> / 1.04×10<sup>19</sup> cm<sup>−3</sup></td></tr>
+        <tr><td class="k"><span class="sym">N</span><sub>A</sub> / <span class="sym">N</span><sub>D</sub></td><td>受主 / 施主浓度</td><td class="num">1×10<sup>16</sup> cm<sup>−3</sup></td></tr>
+        <tr><td class="k"><span class="sym">V</span><sub>bi</sub></td><td>内建电势</td><td class="num">0.714 V</td></tr>
+        <tr><td class="k"><span class="sym">W</span></td><td>耗尽区总宽度</td><td class="num">0.430 μm</td></tr>
+        <tr><td class="k"><span class="sym">E</span><sub>F</sub></td><td>费米能级（电化学势）</td><td class="num">n 区距 E<sub>c</sub> 0.205 eV</td></tr>
+        <tr><td class="k"><span class="sym">E</span><sub>Fn</sub> / <span class="sym">E</span><sub>Fp</sub></td><td>电子 / 空穴准费米能级</td><td class="num">E<sub>Fn</sub> − E<sub>Fp</sub> = qV</td></tr>
+        <tr><td class="k"><span class="sym">L</span><sub>n</sub> / <span class="sym">L</span><sub>p</sub></td><td>电子 / 空穴扩散长度</td><td class="num">59 / 35 μm</td></tr>
+        <tr><td class="k"><span class="sym">D</span><sub>n</sub> / <span class="sym">D</span><sub>p</sub></td><td>扩散系数</td><td class="num">35 / 12.5 cm²/s</td></tr>
+        <tr><td class="k"><span class="sym">τ</span></td><td>少子寿命</td><td class="num">1 μs</td></tr>
+        <tr><td class="k"><span class="sym">V</span><sub>T</sub> = <span class="sym">kT</span>/<span class="sym">q</span></td><td>热电压</td><td class="num">25.85 mV</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <div>本页所有数值由同一组材料参数计算得到，图 4–7 中的曲线为实时数值绘制，非示意手绘。</div>
+    <div class="fnote">
+      说明：取 <span class="sym">E</span><sub>g</sub> = 1.10 eV 而非常见的 1.12 eV，是为了让
+      <span class="sym">N</span><sub>c</sub>、<span class="sym">N</span><sub>v</sub>、<span class="sym">n</span><sub>i</sub> 三者严格满足
+      <span class="sym">n</span><sub>i</sub><sup>2</sup> = <span class="sym">N</span><sub>c</sub><span class="sym">N</span><sub>v</sub>exp(−<span class="sym">E</span><sub>g</sub>/<span class="sym">kT</span>)。
+      这一取舍只影响百分之一量级的数值，不影响任何结论。
+    </div>
+    <div class="fnote" style="margin-top:14px;color:#3f5063">
+      单文件离线页面 · 无外部依赖 · 所有图形由内联 SVG 与 JavaScript 实时生成
+    </div>
+  </footer>
+</section>
+</main>
+</div>
+<script>
+(function(){
+"use strict";
+
+/* ============ 统一材料参数（全页唯一数据源） ============ */
+const PH = {
+  kT: 0.025852,          // V, 300 K
+  Eg: 1.10,              // eV
+  Nc: 2.8e19, Nv: 1.04e19,
+  ni: 1.0e10,
+  NA: 1e16, ND: 1e16,
+  eps: 11.7 * 8.854e-14, // F/cm
+  q: 1.602e-19
+};
+PH.Vbi = PH.kT * Math.log(PH.NA * PH.ND / (PH.ni * PH.ni));   // 0.7143 V
+PH.EFn = -PH.kT * Math.log(PH.Nc / PH.ND);                    // -0.2052 eV
+
+/* 耗尽宽度，单位 μm */
+function depWidth(V){
+  const v = Math.max(PH.Vbi - V, 1e-3);
+  const Wcm = Math.sqrt(2 * PH.eps * v / PH.q * (1/PH.NA + 1/PH.ND));
+  const W = Wcm * 1e4;
+  return { W: W, xp: W * PH.ND / (PH.NA + PH.ND), xn: W * PH.NA / (PH.NA + PH.ND) };
+}
+
+/* 静电势 ψ(x)，单位 V，取 p 侧中性区为 0 */
+function phi(x, V){
+  const d = depWidth(V), psi = PH.Vbi - V;
+  if (x <= -d.xp) return 0;
+  if (x >= d.xn) return psi;
+  const p0 = psi * d.xp / d.W;          // 冶金结处的电势
+  if (x < 0){
+    const t = (x + d.xp) / d.xp;
+    return p0 * t * t;
+  }
+  const t = (d.xn - x) / d.xn;
+  return psi - (psi - p0) * t * t;
+}
+/* 导带底，以 n 区中性区 E_c 为 0 */
+function EcAt(x, V){ return (PH.Vbi - V) - phi(x, V); }
+
+const EC = '#6aa9ff', EV = '#ff8a72', EF = '#5ee0a0';
+
+/* ============ 图 5 / 交互图：能带图 ============ */
+function renderBand(id, V, opts){
+  opts = opts || {};
+  const quasi = !!opts.quasi;
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const WD = 900, HT = 460;
+  const xL = 92, xR = 822, X0 = -0.95, X1 = 0.95;
+  const yTop = 42, yBot = 402, Emin = -1.28, Emax = 1.36;
+  const sx = (xR - xL) / (X1 - X0), sy = (yBot - yTop) / (Emax - Emin);
+  const px = x => xL + (x - X0) * sx;
+  const py = E => yBot - (E - Emin) * sy;
+
+  const d = depWidth(V);
+  const EFn = PH.EFn, EFp = PH.EFn - V;
+  const N = 360, xs = [];
+  for (let i = 0; i <= N; i++) xs.push(X0 + (X1 - X0) * i / N);
+
+  let ecP = '', evP = '';
+  for (let i = 0; i <= N; i++){
+    ecP += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(EcAt(xs[i], V)).toFixed(1);
+  }
+  for (let i = 0; i <= N; i++){
+    evP += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(EcAt(xs[i], V) - PH.Eg).toFixed(1);
+  }
+  let gap = ecP;
+  for (let i = N; i >= 0; i--){
+    gap += 'L' + px(xs[i]).toFixed(1) + ' ' + py(EcAt(xs[i], V) - PH.Eg).toFixed(1);
+  }
+  gap += 'Z';
+
+  const T = (x, y, txt, cls, anchor, fill) =>
+    `<text class="svgtxt ${cls || ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}"` +
+    (anchor ? ` text-anchor="${anchor}"` : '') +
+    (fill ? ` fill="${fill}"` : '') + `>${txt}</text>`;
+
+  const vArrow = (x, y1, y2, color) => {
+    const a = 5;
+    return `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${color}" stroke-width="1.2" stroke-dasharray="4 3" opacity=".9"/>` +
+      `<path d="M${x-a},${y1+a} L${x},${y1} L${x+a},${y1+a}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round"/>` +
+      `<path d="M${x-a},${y2-a} L${x},${y2} L${x+a},${y2-a}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round"/>`;
+  };
+
+  const s = [];
+  s.push(`<defs>
+    <linearGradient id="gp_${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#101c28"/><stop offset="100%" stop-color="#0b141d"/>
+    </linearGradient>
+  </defs>`);
+
+  /* 禁带填充（先画，便于后续叠色） */
+  s.push(`<path d="${gap}" fill="url(#gp_${id})" stroke="none"/>`);
+
+  /* 耗尽区底色 */
+  s.push(`<rect x="${px(-d.xp).toFixed(1)}" y="${yTop - 6}" width="${(px(d.xn) - px(-d.xp)).toFixed(1)}" height="${yBot - yTop + 12}" fill="rgba(120,170,220,.075)"/>`);
+  s.push(`<line x1="${px(-d.xp).toFixed(1)}" y1="${yTop - 6}" x2="${px(-d.xp).toFixed(1)}" y2="${yBot + 6}" stroke="#3b5570" stroke-width="1" stroke-dasharray="4 4"/>`);
+  s.push(`<line x1="${px(d.xn).toFixed(1)}" y1="${yTop - 6}" x2="${px(d.xn).toFixed(1)}" y2="${yBot + 6}" stroke="#3b5570" stroke-width="1" stroke-dasharray="4 4"/>`);
+
+  /* 冶金结 */
+  s.push(`<line x1="${px(0).toFixed(1)}" y1="${yTop - 6}" x2="${px(0).toFixed(1)}" y2="${yBot + 6}" stroke="#2f4356" stroke-width="1" stroke-dasharray="2 4"/>`);
+
+  /* 能带 */
+  s.push(`<path d="${ecP}" fill="none" stroke="${EC}" stroke-width="2.6" stroke-linecap="round"/>`);
+  s.push(`<path d="${evP}" fill="none" stroke="${EV}" stroke-width="2.6" stroke-linecap="round"/>`);
+
+  /* 费米能级 */
+  if (quasi){
+    s.push(`<line x1="${xL}" y1="${py(EFn).toFixed(1)}" x2="${px(-d.xp).toFixed(1)}" y2="${py(EFn).toFixed(1)}" stroke="${EF}" stroke-width="1.2" stroke-dasharray="5 5" opacity=".4"/>`);
+    s.push(`<line x1="${px(-d.xp).toFixed(1)}" y1="${py(EFn).toFixed(1)}" x2="${xR}" y2="${py(EFn).toFixed(1)}" stroke="${EF}" stroke-width="2"/>`);
+    s.push(`<line x1="${xL}" y1="${py(EFp).toFixed(1)}" x2="${px(d.xn).toFixed(1)}" y2="${py(EFp).toFixed(1)}" stroke="${EF}" stroke-width="2"/>`);
+    s.push(`<line x1="${px(d.xn).toFixed(1)}" y1="${py(EFp).toFixed(1)}" x2="${xR}" y2="${py(EFp).toFixed(1)}" stroke="${EF}" stroke-width="1.2" stroke-dasharray="5 5" opacity=".4"/>`);
+  } else {
+    s.push(`<line x1="${xL}" y1="${py(EFn).toFixed(1)}" x2="${xR}" y2="${py(EFn).toFixed(1)}" stroke="${EF}" stroke-width="2"/>`);
+  }
+
+  /* 标签：能带 */
+  s.push(T(84, py(EcAt(X0, V)) - 9, 'E<tspan font-size="10" dy="3">c</tspan>', 'it', 'end', EC));
+  s.push(T(84, py(EcAt(X0, V) - PH.Eg) + 17, 'E<tspan font-size="10" dy="3">v</tspan>', 'it', 'end', EV));
+
+  /* 标签：费米能级 */
+  if (quasi){
+    s.push(T(830, py(EFn) + 5, 'E<tspan font-size="10" dy="3">Fn</tspan>', 'sm', 'start', EF));
+    s.push(T(84, py(EFp) + 5, 'E<tspan font-size="10" dy="3">Fp</tspan>', 'sm', 'end', EF));
+  } else {
+    s.push(T(830, py(EFn) + 5, 'E<tspan font-size="10" dy="3">F</tspan>', 'sm', 'start', EF));
+  }
+
+  /* 注释：qV_bi 或 qV */
+  if (!quasi){
+    const xa = px(0.66);
+    s.push(`<line x1="${px(-d.xp).toFixed(1)}" y1="${py(PH.Vbi - V).toFixed(1)}" x2="${xa.toFixed(1)}" y2="${py(PH.Vbi - V).toFixed(1)}" stroke="#55697c" stroke-width="1" stroke-dasharray="4 4"/>`);
+    s.push(`<line x1="${px(d.xn).toFixed(1)}" y1="${py(0).toFixed(1)}" x2="${xa.toFixed(1)}" y2="${py(0).toFixed(1)}" stroke="#55697c" stroke-width="1" stroke-dasharray="4 4"/>`);
+    s.push(vArrow(xa, py(PH.Vbi - V), py(0), '#9aa9b8'));
+    s.push(T(xa + 10, (py(PH.Vbi - V) + py(0)) / 2 - 4, 'qV', 'it', 'start', '#c2d0dd'));
+    s.push(T(xa + 10, (py(PH.Vbi - V) + py(0)) / 2 + 14, '= ' + (PH.Vbi - V).toFixed(2) + ' eV', 'sm', 'start', '#93a7b9'));
+  } else if (Math.abs(V) > 0.06){
+    const xa = px(0.62);
+    s.push(vArrow(xa, py(EFn), py(EFp), '#8fd8b4'));
+    s.push(T(xa + 10, (py(EFn) + py(EFp)) / 2 - 2, 'qV', 'it', 'start', EF));
+    s.push(T(xa + 10, (py(EFn) + py(EFp)) / 2 + 15, '= ' + V.toFixed(2) + ' eV', 'sm', 'start', '#8fd8b4'));
+  }
+
+  /* 轴与区域标签 */
+  s.push(`<line x1="${xL}" y1="${yBot}" x2="${xR}" y2="${yBot}" stroke="#2b3c4d" stroke-width="1"/>`);
+  s.push(T(xR + 8, yBot + 5, 'x', 'it', 'start', '#55697c'));
+  s.push(T(px(-0.62), 428, 'p 型', 'mono', 'middle', '#ffa994'));
+  s.push(T(px(0), 428, '耗尽区', 'mono', 'middle', '#9fc4ee'));
+  s.push(T(px(0.62), 428, 'n 型', 'mono', 'middle', '#8fbcff'));
+  s.push(T(px(0), 449, 'W = ' + d.W.toFixed(3) + ' μm', 'sm', 'middle', '#5f7186'));
+
+  el.setAttribute('viewBox', `0 0 ${WD} ${HT}`);
+  el.style.cssText = 'display:block;width:100%;height:auto';
+  el.innerHTML = s.join('');
+}
+
+/* ============ 图 6：载流子浓度分布 ============ */
+function renderCarrier(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const WD = 900, HT = 470;
+  const xL = 100, xR = 822, X0 = -0.95, X1 = 0.95;
+  const yTop = 66, yBot = 400, L0 = 2, L1 = 18;
+  const sx = (xR - xL) / (X1 - X0), sy = (yBot - yTop) / (L1 - L0);
+  const px = x => xL + (x - X0) * sx;
+  const py = lg => yBot - (lg - L0) * sy;
+
+  const d = depWidth(0);
+  const nAt = x => PH.Nc * Math.exp(-(EcAt(x, 0) - PH.EFn) / PH.kT);
+  const pAt = x => PH.Nv * Math.exp(-(PH.EFn - (EcAt(x, 0) - PH.Eg)) / PH.kT);
+  const lg = c => Math.log10(Math.max(c, 1e-1));
+
+  const T = (x, y, txt, cls, anchor, fill) =>
+    `<text class="svgtxt ${cls || ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}"` +
+    (anchor ? ` text-anchor="${anchor}"` : '') +
+    (fill ? ` fill="${fill}"` : '') + `>${txt}</text>`;
+
+  const N = 360, xs = [];
+  for (let i = 0; i <= N; i++) xs.push(X0 + (X1 - X0) * i / N);
+
+  let nP = '', pP = '';
+  for (let i = 0; i <= N; i++){
+    nP += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(lg(nAt(xs[i]))).toFixed(1);
+    pP += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(lg(pAt(xs[i]))).toFixed(1);
+  }
+
+  const s = [];
+  /* 耗尽区 */
+  s.push(`<rect x="${px(-d.xp).toFixed(1)}" y="${yTop - 8}" width="${(px(d.xn) - px(-d.xp)).toFixed(1)}" height="${yBot - yTop + 16}" fill="rgba(120,170,220,.075)"/>`);
+  s.push(`<line x1="${px(-d.xp).toFixed(1)}" y1="${yTop - 8}" x2="${px(-d.xp).toFixed(1)}" y2="${yBot + 8}" stroke="#3b5570" stroke-width="1" stroke-dasharray="4 4"/>`);
+  s.push(`<line x1="${px(d.xn).toFixed(1)}" y1="${yTop - 8}" x2="${px(d.xn).toFixed(1)}" y2="${yBot + 8}" stroke="#3b5570" stroke-width="1" stroke-dasharray="4 4"/>`);
+
+  /* 网格 */
+  [4, 8, 12, 16].forEach(e => {
+    const y = py(e);
+    s.push(`<line x1="${xL}" y1="${y.toFixed(1)}" x2="${xR}" y2="${y.toFixed(1)}" stroke="#1b2836" stroke-width="1" stroke-dasharray="2 5"/>`);
+    s.push(T(xL - 12, y + 4, `10<tspan font-size="9" dy="-6">${e}</tspan>`, 'mono', 'end', '#55697c'));
+  });
+  /* n_i 参考线 */
+  s.push(`<line x1="${xL}" y1="${py(10).toFixed(1)}" x2="${xR}" y2="${py(10).toFixed(1)}" stroke="${EF}" stroke-width="1.1" stroke-dasharray="6 5" opacity=".55"/>`);
+  s.push(T(xR - 4, py(10) - 8, 'n<tspan font-size="9" dy="3">i</tspan><tspan dy="-3"> = 1×10¹⁰</tspan>', 'sm', 'end', '#5ee0a0'));
+
+  /* 曲线 */
+  s.push(`<path d="${nP}" fill="none" stroke="${EC}" stroke-width="2.8" stroke-linecap="round"/>`);
+  s.push(`<path d="${pP}" fill="none" stroke="${EV}" stroke-width="2.8" stroke-linecap="round"/>`);
+
+  /* 曲线标签 */
+  s.push(T(px(-0.86), py(16) - 12, 'p(x)', 'it', 'start', EV));
+  s.push(T(px(-0.86), py(4) + 20, 'n(x)', 'it', 'start', EC));
+  s.push(T(px(0.86), py(16) - 12, 'n(x)', 'it', 'end', EC));
+  s.push(T(px(0.86), py(4) + 20, 'p(x)', 'it', 'end', EV));
+
+  /* 关键数值标注 */
+  s.push(T(px(-0.45), py(16) - 12, 'N<tspan font-size="9" dy="3">A</tspan>', 'mono', 'middle', '#7d93a8'));
+  s.push(T(px(0.45), py(16) - 12, 'N<tspan font-size="9" dy="3">D</tspan>', 'mono', 'middle', '#7d93a8'));
+  s.push(T(px(0.45), py(4) + 20, '10⁴ · 少子', 'sm', 'middle', '#7d93a8'));
+  s.push(T(px(-0.45), py(4) + 20, '10⁴ · 少子', 'sm', 'middle', '#7d93a8'));
+
+  /* 交叉点 */
+  s.push(`<circle cx="${px(0).toFixed(1)}" cy="${py(10).toFixed(1)}" r="4" fill="#0b141d" stroke="#e8f1f8" stroke-width="1.6"/>`);
+  s.push(T(px(0) + 12, py(10) + 26, '在结中心 n = p = n', 'sm', 'start', '#c2d0dd'));
+  s.push(T(px(0) + 12, py(10) + 44, '故恒有 n·p = n', 'sm', 'start', '#7d93a8'));
+
+  /* 轴与区域 */
+  s.push(`<line x1="${xL}" y1="${yBot}" x2="${xR}" y2="${yBot}" stroke="#2b3c4d" stroke-width="1"/>`);
+  s.push(T(xL - 12, yTop - 24, '载流子浓度 (cm⁻³)', 'sm', 'start', '#55697c'));
+  s.push(T(xR + 8, yBot + 5, 'x', 'it', 'start', '#55697c'));
+  s.push(T(px(-0.62), 428, 'p 型', 'mono', 'middle', '#ffa994'));
+  s.push(T(px(0), 428, '耗尽区', 'mono', 'middle', '#9fc4ee'));
+  s.push(T(px(0.62), 428, 'n 型', 'mono', 'middle', '#8fbcff'));
+
+  el.setAttribute('viewBox', `0 0 ${WD} ${HT}`);
+  el.style.cssText = 'display:block;width:100%;height:auto';
+  el.innerHTML = s.join('');
+}
+
+/* ============ 图 4：ρ / E / ψ ============ */
+function renderPotential(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const WD = 900, HT = 580;
+  const xL = 118, xR = 832, X0 = -0.62, X1 = 0.62;
+  const sx = (xR - xL) / (X1 - X0);
+  const px = x => xL + (x - X0) * sx;
+  const d = depWidth(0);
+  const VPX = 126;                       // px per volt
+
+  const T = (x, y, txt, cls, anchor, fill) =>
+    `<text class="svgtxt ${cls || ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}"` +
+    (anchor ? ` text-anchor="${anchor}"` : '') +
+    (fill ? ` fill="${fill}"` : '') + `>${txt}</text>`;
+
+  const s = [];
+
+  /* 引导线 */
+  [px(-d.xp), px(0), px(d.xn)].forEach((x, i) => {
+    s.push(`<line x1="${x.toFixed(1)}" y1="62" x2="${x.toFixed(1)}" y2="540" stroke="${i === 1 ? '#2f4356' : '#26374a'}" stroke-width="1" stroke-dasharray="3 5"/>`);
+  });
+  s.push(`<rect x="${px(-d.xp).toFixed(1)}" y="62" width="${(px(d.xn) - px(-d.xp)).toFixed(1)}" height="478" fill="rgba(120,170,220,.045)"/>`);
+
+  /* ---------- (a) 空间电荷 ---------- */
+  s.push(T(xL, 50, '(a) 空间电荷 ρ(x)', 'mono', 'start', '#93a7b9'));
+  s.push(`<line x1="${xL - 8}" y1="132" x2="${xR}" y2="132" stroke="#2b3c4d" stroke-width="1" stroke-dasharray="2 5"/>`);
+  s.push(`<rect x="${px(-d.xp).toFixed(1)}" y="132" width="${(px(0) - px(-d.xp)).toFixed(1)}" height="52" fill="rgba(255,138,114,.22)" stroke="${EV}" stroke-width="1.4"/>`);
+  s.push(`<rect x="${px(0).toFixed(1)}" y="80" width="${(px(d.xn) - px(0)).toFixed(1)}" height="52" fill="rgba(106,169,255,.22)" stroke="${EC}" stroke-width="1.4"/>`);
+  s.push(T((px(-d.xp) + px(0)) / 2, 164, '−qN<tspan font-size="9" dy="3">A</tspan>', 'sm', 'middle', '#ffb3a3'));
+  s.push(T((px(0) + px(d.xn)) / 2, 112, '+qN<tspan font-size="9" dy="3">D</tspan>', 'sm', 'middle', '#a9d0ff'));
+  s.push(T(xL - 14, 137, 'ρ', 'it', 'end', '#c2d0dd'));
+  s.push(`<line x1="${xL}" y1="72" x2="${xL}" y2="196" stroke="#2b3c4d" stroke-width="1"/>`);
+
+  /* ---------- (b) 电场 ---------- */
+  s.push(T(xL, 244, '(b) 电场 E(x)', 'mono', 'start', '#93a7b9'));
+  const peakY = 340 - 78;
+  s.push(`<polygon points="${px(-d.xp).toFixed(1)},340 ${px(0).toFixed(1)},${peakY} ${px(d.xn).toFixed(1)},340" fill="rgba(255,200,87,.18)" stroke="#ffc857" stroke-width="2"/>`);
+  s.push(`<line x1="${xL - 8}" y1="340" x2="${xR}" y2="340" stroke="#2b3c4d" stroke-width="1"/>`);
+  s.push(T(px(0) + 10, peakY + 14, 'E<tspan font-size="9" dy="3">max</tspan>', 'sm', 'start', '#ffc857'));
+  s.push(T(px(-d.xp) - 10, 336, '0', 'sm', 'end', '#55697c'));
+  s.push(T(xL - 14, 270, 'E', 'it', 'end', '#c2d0dd'));
+  s.push(`<line x1="${xL}" y1="252" x2="${xL}" y2="352" stroke="#2b3c4d" stroke-width="1"/>`);
+  s.push(T(px(0.30), 322, '斜率 = qN/ε<tspan font-size="9" dy="3">s</tspan>', 'sm', 'start', '#8b9bab'));
+
+  /* ---------- (c) 电势 ---------- */
+  s.push(T(xL, 412, '(c) 电势 ψ(x)', 'mono', 'start', '#93a7b9'));
+  const yC = 520;
+  let psiP = '';
+  const N = 300;
+  for (let i = 0; i <= N; i++){
+    const x = X0 + (X1 - X0) * i / N;
+    psiP += (i ? 'L' : 'M') + px(x).toFixed(1) + ' ' + (yC - phi(x, 0) * VPX).toFixed(1);
+  }
+  s.push(`<path d="${psiP}" fill="none" stroke="#5ee0a0" stroke-width="2.6"/>`);
+  s.push(`<line x1="${xL - 8}" y1="${yC}" x2="${xR}" y2="${yC}" stroke="#2b3c4d" stroke-width="1" stroke-dasharray="2 5"/>`);
+  s.push(`<line x1="${px(-d.xp).toFixed(1)}" y1="${yC}" x2="${px(d.xn).toFixed(1)}" y2="${(yC - PH.Vbi * VPX).toFixed(1)}" stroke="#5ee0a0" stroke-width="1" stroke-dasharray="3 4" opacity=".35"/>`);
+  s.push(T(xL - 14, 440, 'ψ', 'it', 'end', '#c2d0dd'));
+  s.push(`<line x1="${xL}" y1="424" x2="${xL}" y2="532" stroke="#2b3c4d" stroke-width="1"/>`);
+  s.push(T(px(0.42), yC - PH.Vbi * VPX + 18, 'V<tspan font-size="9" dy="3">bi</tspan> = 0.714 V', 'sm', 'start', '#5ee0a0'));
+
+  /* 底部 x 标签 */
+  s.push(T(px(-d.xp), 556, '−x', 'it', 'end', '#7d93a8'));
+  s.push(T(px(-d.xp), 566, 'p', 'sm', 'middle', '#7d93a8'));
+  s.push(T(px(0), 556, '0', 'mono', 'middle', '#93a7b9'));
+  s.push(T(px(d.xn), 556, 'x', 'it', 'start', '#7d93a8'));
+  s.push(T(px(d.xn), 566, 'n', 'sm', 'middle', '#7d93a8'));
+
+  el.setAttribute('viewBox', `0 0 ${WD} ${HT}`);
+  el.style.cssText = 'display:block;width:100%;height:auto';
+  el.innerHTML = s.join('');
+}
+
+/* ============ 数值格式化 ============ */
+function sci(x){
+  if (!isFinite(x) || x === 0) return '1';
+  const neg = x < 0;
+  x = Math.abs(x);
+  const e = Math.floor(Math.log10(x));
+  let m = x / Math.pow(10, e);
+  let ms = m.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  if (e === 0) return (neg ? '−' : '') + ms;
+  return (neg ? '−' : '') + ms + '×10<sup>' + (e < 0 ? '−' + Math.abs(e) : e) + '</sup>';
+}
+
+/* ============ 初始化图形 ============ */
+renderBand('figBandEq', 0, {});
+renderCarrier('figCarrier');
+renderPotential('figPotential');
+
+/* ============ 交互：外加偏压 ============ */
+const slider = document.getElementById('vSlider');
+function updateBias(){
+  const V = parseFloat(slider.value);
+  renderBand('figBandBias', V, { quasi: true });
+
+  const d = depWidth(V);
+  const ratio = Math.exp(V / PH.kT);
+
+  document.getElementById('vOut').textContent = V.toFixed(2);
+  document.getElementById('roBarrier').innerHTML = (PH.Vbi - V).toFixed(3) + ' <small>eV</small>';
+  document.getElementById('roW').innerHTML = d.W.toFixed(3) + ' <small>μm</small>';
+  document.getElementById('roConc').innerHTML = sci(1e4 * ratio) + ' <small>cm⁻³</small>';
+  document.getElementById('roNp').innerHTML = sci(ratio);
+
+  const st = document.getElementById('roState');
+  if (Math.abs(V) < 0.005){ st.textContent = '热平衡 · J = 0'; st.className = 'rv'; }
+  else if (V > 0){ st.textContent = '结内净复合'; st.className = 'rv amber'; }
+  else { st.textContent = '结内净产生'; st.className = 'rv coral'; }
+}
+if (slider){
+  slider.addEventListener('input', updateBias);
+  updateBias();
+}
+
+/* ============ 目录高亮与阅读进度 ============ */
+const links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+const secs = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const bar = document.querySelector('#progress > i');
+
+function onScroll(){
+  const y = window.scrollY + 140;
+  let idx = 0;
+  for (let i = 0; i < secs.length; i++){
+    if (secs[i].offsetTop <= y) idx = i;
+  }
+  links.forEach((a, i) => a.classList.toggle('active', i === idx));
+
+  if (bar){
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? Math.min(100, window.scrollY / h * 100) : 0) + '%';
+  }
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', onScroll);
+onScroll();
+
+/* ============ 入场动画 ============ */
+if ('IntersectionObserver' in window){
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -6% 0px' });
+
+  document.querySelectorAll('figure, .card, .callout, .control, .tbl-wrap').forEach(function(el){
+    el.classList.add('reveal');
+    io.observe(el);
+  });
+}
+})();
+/* ================= 二维 NPN 载流子输运模型 ================= */
+(function(){
+"use strict";
+
+var cv = document.getElementById('npnCanvas');
+if (!cv || !cv.getContext) return;
+var ctx = cv.getContext('2d');
+
+var CW = 1000, CH = 620;
+var DPR = Math.min(window.devicePixelRatio || 1, 2);
+cv.width = CW * DPR; cv.height = CH * DPR;
+ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+/* ---------- 器件参数（与正文同一组常数） ---------- */
+var DEV = {
+  Nd1: 1e18, Na: 1e16, Nd2: 1e16,
+  ni: 1e10, kT: 0.025852,
+  eps: 11.7 * 8.854e-14, q: 1.602e-19,
+  Lx: 5.0, xEB: 1.0, xBC: 2.6
+};
+var PX0 = 60, PU = 176;          // 左边距 60 px，176 px / μm
+var FY0 = 220, FH = 276;
+var YMAX = FH / PU;              // 1.568 μm
+var HD0 = 136, HD1 = 218;        // 表头带
+var LANE = 512, AXIS = 550;
+
+function xpx(x){ return PX0 + x * PU; }
+function ypx(y){ return FY0 + y * PU; }
+
+/* ---------- 结的解析解 ---------- */
+function vbi(Na, Nd){ return DEV.kT * Math.log(Na * Nd / (DEV.ni * DEV.ni)); }
+function wdep(Na, Nd, Vfwd){
+  var v = Math.max(vbi(Na, Nd) - Vfwd, 1e-3);
+  return Math.sqrt(2 * DEV.eps * v / DEV.q * (1 / Na + 1 / Nd)) * 1e4; // μm
+}
+
+function buildModel(VBE, VCB, a2fix){
+  var W1 = wdep(DEV.Na, DEV.Nd1, VBE);
+  var W2 = wdep(DEV.Na, DEV.Nd2, -VCB);
+  var xn1 = W1 * DEV.Na / (DEV.Na + DEV.Nd1);   // 发射区一侧
+  var xp1 = W1 * DEV.Nd1 / (DEV.Na + DEV.Nd1);  // 基区一侧
+  var xp2 = W2 * DEV.Nd2 / (DEV.Na + DEV.Nd2);  // 基区一侧
+  var xn2 = W2 * DEV.Na / (DEV.Na + DEV.Nd2);   // 集电区一侧
+  var b1 = vbi(DEV.Na, DEV.Nd1) - VBE;          // 发射结势垒高度 (eV)
+  var drop2 = vbi(DEV.Na, DEV.Nd2) + VCB;       // 集电结能带落差 (eV)
+  var a1 = DEV.xEB - xn1, x1 = DEV.xEB + xp1;
+  /* a2 = 集电结耗尽区的基区侧边界。基区扩展效应会把它推向集电区 */
+  var a2 = (a2fix != null) ? a2fix : (DEV.xBC - xp2);
+  var x2 = DEV.xBC + xn2;
+  var c1L = b1 / (W1 * xn1), c1R = b1 / (W1 * xp1);
+  /* 集电结：两段抛物线，电场峰值落在 [a2,x2] 的中点（常态下即冶金结） */
+  var bcmid = (a2 + x2) / 2;
+  var Aa = Math.max(bcmid - a2, 1e-3), Bb = Math.max(x2 - bcmid, 1e-3);
+  var c2L = drop2 / (Aa * (Aa + Bb)), c2R = drop2 / (Bb * (Aa + Bb));
+
+  function Ec(x){
+    if (x <= a1) return 0;
+    if (x < DEV.xEB){ var a = x - a1; return c1L * a * a; }
+    if (x < x1){ var b = x1 - x; return b1 - c1R * b * b; }
+    if (x <= a2) return b1;
+    if (x < bcmid){ var c = x - a2; return b1 - c2L * c * c; }
+    if (x < x2){ var d = x2 - x; return (b1 - drop2) + c2R * d * d; }
+    return b1 - drop2;
+  }
+  function grad(x){  // dEc/dx，eV/μm
+    var h = 0.004;
+    return (Ec(x + h) - Ec(x - h)) / (2 * h);
+  }
+  return { W1: W1, W2: W2, xn1: xn1, xp1: xp1, xp2: xp2, xn2: xn2,
+           b1: b1, drop2: drop2, a1: a1, b1x: x1, a2: a2, b2x: x2,
+           Ec: Ec, grad: grad };
+}
+
+/* ---------- 模式 ---------- */
+var MODES = {
+  eq:   { VBE: 0, VCB: 0, inj: 0, gen: 15, hint: 'V<sub>BE</sub> = 0 V　·　V<sub>CB</sub> = 0 V' },
+  fwd:  { VBE: 0.60, VCB: 3.0, inj: 46, gen: 3, hint: 'V<sub>BE</sub> = +0.60 V　·　V<sub>CB</sub> = +3.0 V' },
+  rev:  { VBE: -0.30, VCB: 3.0, inj: 0, gen: 32, hint: 'V<sub>BE</sub> = −0.30 V　·　V<sub>CB</sub> = +3.0 V' },
+  /* —— 四个非理想效应 —— */
+  crowd:{ VBE: 0.60, VCB: 3.0, inj: 0, gen: 3, sweep: 1, dur: 7,
+          hint: '拖动下方滑块改变电流　·　基极横向压降增大，注入挤向发射极边缘' },
+  kirk: { VBE: 0.60, VCB: 3.0, inj: 0, gen: 2, sweep: 1, dur: 8,
+          hint: '拖动滑块把电流推过 J<sub>K</sub>　·　基区随之被推进集电区' },
+  early:{ VBE: 0.60, VCB: 3.0, inj: 0, gen: 2, sweep: 1, dur: 8,
+          hint: '拖动滑块改变 V<sub>CE</sub>　·　耗尽区吞掉中性基区' },
+  punch:{ VBE: 0.60, VCB: 3.0, inj: 0, gen: 1, sweep: 1, dur: 9,
+          hint: '拖动滑块改变 V<sub>CB</sub>　·　耗尽区推进至合并' }
+};
+var modeKey = 'fwd';
+var model = buildModel(MODES[modeKey].VBE, MODES[modeKey].VCB, MODES[modeKey].a2fix);
+var running = true;
+
+/* ---------- 平均速度标定 ----------
+   本模型只呈现载流子的宏观平均速度（漂移 + 扩散净移动），
+   不叠加随机热运动，以便直接读出流向与快慢。 */
+var KDRIFT = 0.62;          // μm/s per (eV/μm)
+var VDRIFT_MAX = 5.0;
+var V_DIFF0 = 0.38;         // 基区入口处的平均扩散速度 μm/s
+var V_EMIT = 0.143;         // 发射区多数电子流向 EB 结的速度（额定值，实际按通量换算）
+var V_COLL = 0.20;          // 集电区电子流向欧姆接触的速度（同上）
+var V_INJE = -0.45;         // 注入到发射区的空穴速度
+
+/* 由真实通量换算的多数载流子流速：无电流时为零 */
+var emitV = 0, collV = 0;
+var emaInj = 0, emaColl = 0, prevCollTotal = 0;
+var recBase = 0, emaRecBase = 0, prevRecBase = 0;
+
+/* 平均速度场：耗尽区内由 dEc/dx 给出，中性区按角色给定 */
+function meanVx(p, m){
+  if (p.noDrift) return 0;
+  var inBC = p.x > m.a2 && p.x < m.b2x;
+  var inEB = p.x > m.a1 && p.x < m.b1x && p.role !== 'injB';
+  if (inBC || inEB){
+    var vd = (p.k === 'e' ? -1 : 1) * KDRIFT * m.grad(p.x);
+    if (Math.abs(vd) < 0.30) vd = (vd < 0 ? -0.30 : 0.30);  // 边界处场为零，仍需穿过
+    if (vd > VDRIFT_MAX) vd = VDRIFT_MAX;
+    if (vd < -VDRIFT_MAX) vd = -VDRIFT_MAX;
+    return vd;
+  }
+  if (p.role === 'injB'){
+    var u = (p.x - m.b1x) / Math.max(m.a2 - m.b1x, 1e-3);
+    if (u < 0) u = 0; else if (u > 1) u = 1;
+    return V_DIFF0 / Math.max(1 - u, 0.22);
+  }
+  if (p.role === 'injE') return V_INJE;
+  if (p.role === 'maj'){
+    if (p.home === 'E') return p.x > m.a1 - 0.015 ? 0 : emitV;
+    if (p.home === 'C') return collV;
+  }
+  return 0;
+}
+
+var CELL = 0.04, R2 = 0.018 * 0.018, PREC = 0.003;
+
+/* ---------- 状态 ---------- */
+var parts = [], flashes = [], streaks = [];
+var injTotal = 0, collTotal = 0, recTotal = 0, collInj = 0;
+var accInj = 0, accHole = 0, accGen = 0;
+var TARGET = { E: 300, B: 260, C: 380 };
+
+/* ---------- 粒子 ↔ 电流的换算 ----------
+   以正偏工作点为基准：46 个粒子/秒 ↔ 7.2 A/cm²
+   所以 1 个粒子/秒 = 0.1565 A/cm²。注入率不再手工给定，
+   而是由解析电流 J_C 反算，屏幕上流动的粒子数因此与真实电流严格成正比。 */
+var A_PER_PARTICLE = 7.2 / 46;   // 0.1565 A/cm² per (个/s)
+var injRate = 46;                // 由 populate() 按物理电流重算
+var curJ = 7.2;                  // 当前模式的集电极电流密度 A/cm²
+var curJrel = 0;                 // Kirk 模式下的 J/J_K
+var curVBE = 0.60;               // 当前有效 V_BE（供浓度剖面使用）
+var curVCB = 3.0;                // 当前有效 V_CB（供外部电路标注使用）
+
+function neutralBounds(m){
+  var b0 = m.b1x + 0.02, b1 = m.a2 - 0.02;
+  if (b1 < b0 + 0.03) b1 = b0 + 0.03;   // 穿通时中性基区退化为零，仍需给抽样一个非空区间
+  return {
+    E: [0.03, Math.max(m.a1 - 0.02, 0.05)],
+    B: [b0, b1],
+    C: [m.b2x + 0.02, DEV.Lx - 0.03]
+  };
+}
+
+/* 横向抽样：集边模式下越靠近发射极上下边缘，抽中概率越大
+   （权重 1/(1+(d/L)²)，与图 11 的 J_E(x) 同一形状）
+   amt 为 0~1 的"集边强度"，随电流增大而增强：L = 0.55 → 0.25 */
+function pickY(amt){
+  var y0 = 0.03, y1 = YMAX - 0.03;
+  if (!amt) return y0 + Math.random() * (y1 - y0);
+  var L = 0.55 - 0.30 * amt;
+  for (var k = 0; k < 10; k++){
+    var y = y0 + Math.random() * (y1 - y0);
+    var d = Math.min(y, YMAX - y);
+    if (Math.random() < 1 / (1 + (d / L) * (d / L))) return y;
+  }
+  return y0 + Math.random() * (y1 - y0);
+}
+
+/* ---------- 效应模式的驱动量 ----------
+   每个效应都有一个可手动拖动的驱动量。点击按钮先自动播一遍，
+   之后拖动滑块可停在任意位置，观察几何如何随驱动量连续改变。 */
+var DRIVERS = {
+  crowd: { min: 7,   max: 20,  step: 0.2,  lab: '集电极电流 J', unit: 'A/cm²', dec: 1 },
+  kirk:  { min: 0.3, max: 1.6, step: 0.01, lab: '电流 J/J_K',   unit: '',      dec: 2 },
+  early: { min: 2,   max: 18,  step: 0.1,  lab: 'V_CE',          unit: 'V',     dec: 1 },
+  punch: { min: 3,   max: 45,  step: 0.5,  lab: 'V_CB',          unit: 'V',     dec: 1 }
+};
+var driverVal = 7, autoPlay = false, sweepU = 1;
+
+function applyModeState(){
+  var k = modeKey, cfgM = MODES[k], d = DRIVERS[k];
+  var VBE = cfgM.VBE, VCB = cfgM.VCB, a2 = cfgM.a2fix, Jrel = 0;
+
+  if (k === 'crowd'){
+    /* 由目标电流反解 V_BE */
+    VBE = 0.60 + 0.025852 * Math.log(Math.max(driverVal, 1) / 7.2);
+  } else if (k === 'kirk'){
+    Jrel = driverVal;
+    var a2nom = DEV.xBC - wdep(DEV.Na, DEV.Nd2, -3.0) * 0.5;
+    a2 = Math.min(a2nom + Math.max(0, Jrel - 1) * 1.55, 2.95);  // 越过 J_K 才扩展，且耗尽区不能压成负值
+  } else if (k === 'early'){
+    VCB = Math.max(0.2, driverVal - 0.60);       // V_CE → V_CB
+  } else if (k === 'punch'){
+    VCB = driverVal;
+  }
+  model = buildModel(VBE, VCB, a2);
+  curVBE = VBE;
+  curVCB = VCB;
+  sweepU = d ? Math.min(1, Math.max(0, (driverVal - d.min) / (d.max - d.min))) : 1;
+
+  var WBn = Math.max(model.a2 - model.b1x, 0.02);
+  if (k === 'kirk'){
+    curJrel = Jrel;
+    curJ = 7.2 * (curJrel / 0.5);
+  } else {
+    var jrel = VBE > 0.1
+      ? Math.exp((VBE - 0.60) / 0.025852) * (0.937 / WBn)
+      : 0;
+    curJ = Math.min(40, 7.2 * jrel);
+    curJrel = 0;
+  }
+  injRate = Math.round(curJ / A_PER_PARTICLE);
+
+  var nb = neutralBounds(model);
+  var dens = { E: 205, B: 150, C: 145 };
+  TARGET.E = Math.round(dens.E * (nb.E[1] - nb.E[0]) * YMAX);
+  TARGET.B = (nb.B[1] - nb.B[0] < 0.06) ? 0
+            : Math.round(dens.B * (nb.B[1] - nb.B[0]) * YMAX);
+  TARGET.C = Math.round(dens.C * (nb.C[1] - nb.C[0]) * YMAX);
+
+  syncSlider(d);
+}
+
+/* 让滑块与读数跟着当前驱动量走 */
+function syncSlider(d){
+  var box = document.getElementById('npnSlide');
+  if (!box) return;
+  if (!d){ box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  var sl = document.getElementById('npnSlider');
+  if (sl){
+    if (sl.getAttribute('min') !== String(d.min)){
+      sl.min = d.min; sl.max = d.max; sl.step = d.step;
+    }
+    if (document.activeElement !== sl && Math.abs(parseFloat(sl.value) - driverVal) > 1e-9){
+      sl.value = driverVal;
+    }
+  }
+  var lab = document.getElementById('slideLab');
+  if (lab) lab.textContent = d.lab;
+  var val = document.getElementById('slideVal');
+  if (val){
+    val.innerHTML = driverVal.toFixed(d.dec) +
+      (d.unit ? ' <small style="color:#6d8296">' + d.unit + '</small>' : '');
+  }
+}
+
+function makeParticle(k, home, x, y, role){
+  return { k: k, x: x, y: y, vx: 0, vy: 0, home: home, role: role || 'maj',
+           u: Math.random(), alive: true, life: 0, partner: null,
+           noDrift: false, bandX0: 0, bandX1: 0 };
+}
+
+function populate(){
+  parts = []; flashes = []; streaks = [];
+  injTotal = 0; collTotal = 0; recTotal = 0; collInj = 0;
+  accInj = 0; accHole = 0; accGen = 0;
+  emaInj = 0; emaColl = 0; prevCollTotal = 0; emitV = 0; collV = 0;
+  recBase = 0; emaRecBase = 0; prevRecBase = 0;
+
+  /* 先按当前时间轴位置把几何与电流摆好 */
+  applyModeState(modeKey, sweepU);
+
+  spawnMany('e', 'E', TARGET.E);
+  spawnMany('h', 'B', TARGET.B);
+  spawnMany('e', 'C', TARGET.C);
+
+  /* 热启动：直接铺好基区的稳态少子分布，避免刚打开时基区"空"着 */
+  if (MODES[modeKey].inj > 0){
+    var w = Math.max(model.a2 - model.b1x, 0.05);
+    for (var j = 0; j < 80; j++){
+      var u = 1 - Math.sqrt(1 - Math.random());
+      parts.push(makeParticle('e', null, model.b1x + u * w,
+        0.03 + Math.random() * (YMAX - 0.06), 'injB'));
+    }
+  }
+}
+function spawnMany(k, home, n){
+  var nb = neutralBounds(model), r = nb[home];
+  var cr = (modeKey === 'crowd') ? sweepU : 0;
+  for (var i = 0; i < n; i++){
+    parts.push(makeParticle(k, home,
+      r[0] + Math.random() * (r[1] - r[0]),
+      pickY(cr)));
+  }
+}
+
+/* ---------- 越过势垒的注入 ----------
+   势垒对已越过它的载流子近似单向：进入中性区后不再返回，
+   这与"中性区无电场、输运靠扩散"的假设一致。 */
+function injectElectron(){
+  var m = model, best = null;
+  for (var i = 0; i < parts.length; i++){
+    var p = parts[i];
+    if (p.alive && p.k === 'e' && p.role === 'maj' && p.home === 'E'){
+      if (!best || p.x > best.x) best = p;
+    }
+  }
+  if (!best) return;
+  var x0 = best.x, y0 = best.y;
+  best.x = m.b1x + 0.02;
+  best.y = Math.min(Math.max(y0, 0.03), YMAX - 0.03);
+  best.vx = 0.6; best.vy = 0;
+  best.home = null; best.role = 'injB';
+  streaks.push({ x1: x0, y1: y0, x2: best.x, y2: best.y, t: 0, life: 0.3, c: 'e' });
+  injTotal++;
+}
+function injectHole(){
+  var m = model, best = null;
+  for (var i = 0; i < parts.length; i++){
+    var p = parts[i];
+    if (p.alive && p.k === 'h' && p.role === 'maj' && p.home === 'B'){
+      if (!best || p.x < best.x) best = p;
+    }
+  }
+  if (!best) return;
+  var x0 = best.x, y0 = best.y;
+  best.x = Math.max(m.a1 - 0.02, 0.03);
+  best.y = Math.min(Math.max(y0, 0.03), YMAX - 0.03);
+  best.vx = -0.5; best.home = null; best.role = 'injE';
+  best.life = 2.4 + Math.random() * 1.6;
+  streaks.push({ x1: x0, y1: y0, x2: best.x, y2: best.y, t: 0, life: 0.3, c: 'h' });
+}
+
+/* ---------- 耗尽区内的热产生 ---------- */
+function generatePair(){
+  var m = model;
+  var wEB = m.b1x - m.a1, wBC = m.b2x - m.a2;
+  var x, b0, b1;
+  if (Math.random() * (wEB + wBC) < wEB){ x = m.a1 + Math.random() * wEB; b0 = m.a1; b1 = m.b1x; }
+  else { x = m.a2 + Math.random() * wBC; b0 = m.a2; b1 = m.b2x; }
+  var y = 0.04 + Math.random() * (YMAX - 0.08);
+  var e = makeParticle('e', null, x, y, 'pair');
+  var h = makeParticle('h', null, x, y, 'pair');
+  e.bandX0 = b0; e.bandX1 = b1;
+  h.bandX0 = b0; h.bandX1 = b1;
+  if (modeKey === 'eq'){
+    var L = 0.5 + Math.random() * 1.1;
+    e.life = L; h.life = L;
+    e.partner = h; h.partner = e;
+    e.noDrift = true; h.noDrift = true;
+  }
+  parts.push(e, h);
+}
+
+/* ---------- 复合 ---------- */
+function recombine(e, h){
+  e.alive = false; h.alive = false;
+  flashes.push({ x: (e.x + h.x) / 2, y: (e.y + h.y) / 2, t: 0, life: 0.5, k: 'rec' });
+  recTotal++;
+  if (e.role === 'injB') recBase++;
+  /* 基区空穴被复合后由基极接触就地补充（维持空穴浓度不变） */
+  if (h.role === 'maj' && h.home === 'B'){
+    var q = makeParticle('h', 'B', h.x, h.y);
+    var u0 = typeof h.u === 'number' ? h.u : 0.5;
+    q.u = Math.min(0.98, Math.max(0.02, u0 + (Math.random() - 0.5) * 0.03));
+    q.y = Math.min(Math.max(h.y + (Math.random() - 0.5) * 0.05, 0.03), YMAX - 0.03);
+    parts.push(q);
+  }
+}
+
+/* ---------- 单步演化 ---------- */
+function step(dt){
+  var m = model, cfg = MODES[modeKey], i, p;
+
+  /* 效应模式：自动播放时驱动量连续爬升，几何随之改变 */
+  if (cfg.sweep && autoPlay){
+    var dv = DRIVERS[modeKey];
+    driverVal += (dv.max - dv.min) * dt / (cfg.dur || 7);
+    if (driverVal >= dv.max){ driverVal = dv.max; autoPlay = false; }
+    applyModeState();
+    m = model;
+  }
+  var nb = neutralBounds(m);
+
+  /* 支路电流的平滑估计 → 多数载流子流速（eq 时自然为零） */
+  var kk = Math.min(1, dt / 0.35);
+  emaInj += (injRate - emaInj) * kk;
+  var inst = Math.min(300, (collTotal - prevCollTotal) / dt);
+  emaColl += (inst - emaColl) * kk;
+  prevCollTotal = collTotal;
+  var instR = Math.min(200, (recBase - prevRecBase) / dt);
+  emaRecBase += (instR - emaRecBase) * Math.min(1, dt / 1.2);
+  prevRecBase = recBase;
+  emitV = Math.min(0.8, emaInj / (TARGET.E / Math.max(m.a1, 0.1)));
+  collV = Math.min(0.8, emaColl / (TARGET.C / Math.max(DEV.Lx - m.b2x, 0.1)));
+
+  /* 注入 */
+  if (injRate > 0){
+    accInj += injRate * dt;
+    while (accInj >= 1){ accInj -= 1; injectElectron(); }
+    accHole += injRate / 25 * dt;
+    while (accHole >= 1){ accHole -= 1; injectHole(); }
+  }
+  /* 产生 */
+  accGen += cfg.gen * dt;
+  while (accGen >= 1){ accGen -= 1; generatePair(); }
+
+  /* 运动：每一位载流子沿其平均速度前进（不含热运动） */
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive) continue;
+
+    var vx = meanVx(p, m);
+    p.vx = vx;
+    p.x += vx * dt;
+
+    /* 寿命（平衡态的对产生、注入到发射区的空穴） */
+    if (p.life > 0){
+      p.life -= dt;
+      if (p.life <= 0){
+        p.alive = false;
+        if (p.partner && p.partner.alive) p.partner.alive = false;
+        flashes.push({ x: p.x, y: p.y, t: 0, life: 0.45, k: 'rec' });
+        recTotal++;
+      }
+    }
+
+    /* 归宿与边界 */
+    if (p.role === 'pair'){
+      if (modeKey === 'eq'){
+        /* 平衡态：产生与复合局部抵消，对产生载流子不会离开耗尽区 */
+        if (p.x < p.bandX0){ p.x = p.bandX0; if (p.vx < 0) p.vx = -p.vx; }
+        if (p.x > p.bandX1){ p.x = p.bandX1; if (p.vx > 0) p.vx = -p.vx; }
+      } else if (p.x < p.bandX0 || p.x > p.bandX1){
+        p.alive = false;
+        if (p.k === 'e' && p.x > p.bandX1){
+          collTotal++;
+          flashes.push({ x: p.x, y: p.y, t: 0, life: 0.38, k: 'coll' });
+        } else {
+          flashes.push({ x: p.x, y: p.y, t: 0, life: 0.38, k: 'rec' });
+        }
+      }
+    } else if (p.role === 'injB'){
+      if (p.x < m.b1x){ p.x = m.b1x; if (p.vx < 0) p.vx = -p.vx; }
+      if (p.x > m.b2x){
+        p.alive = false; collTotal++; collInj++;
+        flashes.push({ x: m.b2x, y: p.y, t: 0, life: 0.42, k: 'coll' });
+      }
+    } else if (p.role === 'injE'){
+      if (p.x > m.a1){ p.x = m.a1; if (p.vx > 0) p.vx = -p.vx; }
+      if (p.x < 0.02) p.alive = false;
+    } else {
+      if (p.x < 0.02 || p.x > DEV.Lx - 0.02) p.alive = false;
+    }
+  }
+
+  /* 复合：以空穴为索引，查邻近电子 */
+  var egrid = new Map();
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.k !== 'e') continue;
+    var cx = Math.floor(p.x / CELL), cy = Math.floor(p.y / CELL);
+    var key = cx * 1000 + cy;
+    var arr = egrid.get(key);
+    if (arr) arr.push(p); else egrid.set(key, [p]);
+  }
+  for (i = 0; i < parts.length; i++){
+    var h = parts[i];
+    if (!h.alive || h.k !== 'h') continue;
+    var hx = Math.floor(h.x / CELL), hy = Math.floor(h.y / CELL);
+    var done = false;
+    for (var dx = -1; dx <= 1 && !done; dx++){
+      for (var dy = -1; dy <= 1 && !done; dy++){
+        var cell = egrid.get((hx + dx) * 1000 + (hy + dy));
+        if (!cell) continue;
+        for (var j = 0; j < cell.length; j++){
+          var e = cell[j];
+          if (!e.alive || e.partner === h) continue;
+          var ddx = e.x - h.x, ddy = e.y - h.y;
+          if (ddx * ddx + ddy * ddy < R2 && Math.random() < PREC){
+            recombine(e, h);
+            done = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /* 基区空穴用归一化坐标 u 映射到当前中性基区：
+     基区变宽/变窄时整片空穴随之舒展或压缩，密度永远均匀，
+     不会像"按面积补粒子"那样在旧边界处越堆越密。 */
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (p.alive && p.role === 'maj' && p.home === 'B'){
+      p.x = nb.B[0] + p.u * (nb.B[1] - nb.B[0]);
+    } else if (p.alive && p.role === 'maj' && p.home === 'C' && p.x < nb.C[0] - 0.02){
+      p.alive = false;   // 集电区被耗尽区吞掉的部分
+    }
+  }
+
+  /* 补充多数载流子（代表欧姆接触的持续供给） */
+  var nE = 0, nB = 0, nC = 0, bList = [];
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.role !== 'maj') continue;
+    if (p.k === 'e' && p.home === 'E') nE++;
+    else if (p.k === 'h' && p.home === 'B'){ nB++; bList.push(p); }
+    else if (p.k === 'e' && p.home === 'C') nC++;
+  }
+
+  /* 基区空穴数量随宽度伸缩，保持密度不变 */
+  if (nB > TARGET.B && bList.length){
+    var keepRatio = TARGET.B / nB;
+    for (i = 0; i < bList.length; i++){
+      if (bList[i].alive && Math.random() > keepRatio) bList[i].alive = false;
+    }
+    nB = TARGET.B;
+  }
+
+  var guard = 0, crM = (modeKey === 'crowd') ? sweepU : 0;
+  while (nE < TARGET.E && guard++ < 6){
+    parts.push(makeParticle('e', 'E', 0.03 + Math.random() * 0.06, pickY(crM)));
+    nE++;
+  }
+  guard = 0;
+  while (nB < TARGET.B && guard++ < 30){
+    parts.push(makeParticle('h', 'B',
+      nb.B[0] + Math.random() * (nb.B[1] - nb.B[0]), pickY(crM)));
+    nB++;
+  }
+  guard = 0;
+  while (nC < TARGET.C && guard++ < 6){
+    parts.push(makeParticle('e', 'C', nb.C[0] + Math.random() * 0.08, pickY(crM)));
+    nC++;
+  }
+
+  /* 清理 */
+  if (parts.length > 2600){
+    parts = parts.filter(function(q){ return q.alive; });
+  }
+  for (i = flashes.length - 1; i >= 0; i--){ flashes[i].t += dt; if (flashes[i].t > flashes[i].life) flashes.splice(i, 1); }
+  for (i = streaks.length - 1; i >= 0; i--){ streaks[i].t += dt; if (streaks[i].t > streaks[i].life) streaks.splice(i, 1); }
+}
+
+/* ---------- 绘制 ---------- */
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+function arrowH(x1, x2, y, color, w){
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w || 1.6;
+  ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+  var s = x2 > x1 ? 1 : -1;
+  ctx.beginPath();
+  ctx.moveTo(x2, y);
+  ctx.lineTo(x2 - s * 7, y - 4);
+  ctx.lineTo(x2 - s * 7, y + 4);
+  ctx.closePath(); ctx.fill();
+}
+
+function draw(){
+  var m = model, i, p;
+  var xE = xpx(DEV.xEB), xC = xpx(DEV.xBC);
+
+  ctx.clearRect(0, 0, CW, CH);
+  ctx.fillStyle = '#080d13';
+  ctx.fillRect(0, 0, CW, CH);
+
+  /* 区域底色 */
+  ctx.fillStyle = 'rgba(90,169,255,.055)';
+  ctx.fillRect(xpx(0), FY0, xpx(m.a1) - xpx(0), FH);
+  ctx.fillStyle = 'rgba(255,138,114,.06)';
+  ctx.fillRect(xpx(m.b1x), FY0, xpx(m.a2) - xpx(m.b1x), FH);
+  ctx.fillStyle = 'rgba(90,169,255,.045)';
+  ctx.fillRect(xpx(m.b2x), FY0, xpx(DEV.Lx) - xpx(m.b2x), FH);
+
+  /* 耗尽区 */
+  [[m.a1, m.b1x], [m.a2, m.b2x]].forEach(function(band){
+    var x0 = xpx(band[0]), x1 = xpx(band[1]);
+    ctx.fillStyle = 'rgba(4,9,14,.72)';
+    ctx.fillRect(x0, FY0, x1 - x0, FH);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, FY0, x1 - x0, FH); ctx.clip();
+    ctx.strokeStyle = 'rgba(130,175,215,.085)'; ctx.lineWidth = 1;
+    for (var k = -FH; k < (x1 - x0) + 12; k += 9){
+      ctx.beginPath();
+      ctx.moveTo(x0 + k, FY0 + FH);
+      ctx.lineTo(x0 + k + FH, FY0);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(120,170,220,.30)'; ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(x0, FY0); ctx.lineTo(x0, FY0 + FH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, FY0); ctx.lineTo(x1, FY0 + FH); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  /* 表头 */
+  drawHeader(0, DEV.xEB, 'N⁺ 发射区', '#8fbcff', 'rgba(90,169,255,.062)', '施主 1×10¹⁸ cm⁻³', 'n₀ = 1×10¹⁸', 'p₀ = 1×10²');
+  drawHeader(DEV.xEB, DEV.xBC, 'P 基区', '#ffa994', 'rgba(255,138,114,.068)', '受主 1×10¹⁶ cm⁻³', 'p₀ = 1×10¹⁶', 'n₀ = 1×10⁴');
+  drawHeader(DEV.xBC, DEV.Lx, 'N 集电区', '#8fbcff', 'rgba(90,169,255,.05)', '施主 1×10¹⁶ cm⁻³', 'n₀ = 1×10¹⁶', 'p₀ = 1×10⁴');
+
+  /* 结线 */
+  ctx.strokeStyle = 'rgba(150,180,210,.28)'; ctx.lineWidth = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.beginPath(); ctx.moveTo(xE, HD1); ctx.lineTo(xE, AXIS); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xC, HD1); ctx.lineTo(xC, AXIS); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* 耗尽区竖排标签 */
+  ctx.save();
+  ctx.translate((xpx(m.a2) + xpx(m.b2x)) / 2, FY0 + 22);
+  ctx.fillStyle = 'rgba(150,195,230,.42)';
+  ctx.font = '600 12.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('耗 尽 区', 0, 0);
+  ctx.restore();
+
+  /* 漂移方向标注（仅集电结带内） */
+  var bx0 = xpx(m.a2) + 16, bx1 = xpx(m.b2x) - 16;
+  if (bx1 - bx0 > 70){
+    ctx.globalAlpha = 0.5;
+    arrowH(bx1, bx0, FY0 + 200, '#ffc857', 1.4);
+    ctx.fillStyle = '#ffc857'; ctx.font = '600 12px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'left'; ctx.fillText('E 场', bx0 + 4, FY0 + 194);
+    arrowH(bx0, bx1, FY0 + 224, '#5aa9ff', 1.4);
+    ctx.fillStyle = '#5aa9ff'; ctx.textAlign = 'right';
+    ctx.fillText('e⁻ 漂移', bx1 - 4, FY0 + 218);
+    arrowH(bx1, bx0, FY0 + 248, '#ff8a72', 1.4);
+    ctx.fillStyle = '#ff8a72'; ctx.textAlign = 'left';
+    ctx.fillText('h⁺ 漂移', bx0 + 4, FY0 + 242);
+    ctx.globalAlpha = 1;
+  }
+
+  /* 速度拖尾：长度正比于平均速率，直观给出"多快" */
+  ctx.strokeStyle = 'rgba(90,169,255,.26)'; ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.k !== 'e' || Math.abs(p.vx) < 0.12) continue;
+    var L = Math.min(Math.abs(p.vx) * 0.055, 0.075);
+    ctx.moveTo(xpx(p.vx > 0 ? p.x - L : p.x + L), ypx(p.y));
+    ctx.lineTo(xpx(p.x), ypx(p.y));
+  }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,138,114,.24)'; ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.k !== 'h' || Math.abs(p.vx) < 0.12) continue;
+    var L2 = Math.min(Math.abs(p.vx) * 0.055, 0.075);
+    ctx.moveTo(xpx(p.vx > 0 ? p.x - L2 : p.x + L2), ypx(p.y));
+    ctx.lineTo(xpx(p.x), ypx(p.y));
+  }
+  ctx.stroke();
+
+  /* 粒子 */
+  ctx.fillStyle = '#5aa9ff';
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.k !== 'e') continue;
+    ctx.beginPath(); ctx.arc(xpx(p.x), ypx(p.y), 2.15, 0, 6.2832); ctx.fill();
+  }
+  ctx.strokeStyle = '#ff8a72'; ctx.lineWidth = 1.5;
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (!p.alive || p.k !== 'h') continue;
+    ctx.beginPath(); ctx.arc(xpx(p.x), ypx(p.y), 2.5, 0, 6.2832); ctx.stroke();
+  }
+
+  /* 跨越势垒的拖尾 */
+  for (i = 0; i < streaks.length; i++){
+    var st = streaks[i], k = st.t / st.life;
+    ctx.globalAlpha = (1 - k) * 0.55;
+    ctx.strokeStyle = st.c === 'e' ? '#7cc0ff' : '#ffa994';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(xpx(st.x1), ypx(st.y1)); ctx.lineTo(xpx(st.x2), ypx(st.y2)); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 闪光 */
+  for (i = 0; i < flashes.length; i++){
+    var f = flashes[i], t = f.t / f.life;
+    ctx.globalAlpha = (1 - t) * 0.9;
+    ctx.strokeStyle = f.k === 'rec' ? '#ffc857' : '#5ee0a0';
+    ctx.lineWidth = 2 * (1 - t) + 0.5;
+    ctx.beginPath(); ctx.arc(xpx(f.x), ypx(f.y), 3 + t * 15, 0, 6.2832); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* 模式提示（画在粒子之上）：效应模式显示驱动量与当前基区宽度 */
+  var note = null, progress = -1;
+  var WBcur = Math.max(m.a2 - m.b1x, 0);
+  if (modeKey === 'eq'){
+    note = '平均速度 = 0：无净流动，仅有局部的产生与复合';
+  } else if (modeKey === 'crowd'){
+    progress = sweepU;
+    note = 'J = ' + curJ.toFixed(1) + ' A/cm²　→ 集边加剧';
+  } else if (modeKey === 'kirk'){
+    progress = sweepU;
+    note = 'J/J_K = ' + curJrel.toFixed(2) + '　·　有效基区 ' + WBcur.toFixed(2) + ' μm' +
+           (curJrel >= 1 ? '（已越阈值）' : '（未越阈值）');
+  } else if (modeKey === 'early'){
+    progress = sweepU;
+    note = 'V_CE = ' + driverVal.toFixed(1) + ' V　·　中性基区 ' + WBcur.toFixed(2) + ' μm';
+  } else if (modeKey === 'punch'){
+    progress = sweepU;
+    note = 'V_CB = ' + driverVal.toFixed(1) + ' V　·　中性基区 ' + WBcur.toFixed(2) + ' μm';
+  }
+  if (note){
+    ctx.font = '11.5px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    var nw = ctx.measureText(note).width + 22;
+    var nx = xpx(DEV.Lx) - 12 - nw;
+    ctx.fillStyle = 'rgba(6,12,18,.86)';
+    roundRect(nx, FY0 + 8, nw, 22, 11);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(120,160,200,.18)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = progress >= 0 ? '#ffd166' : 'rgba(160,190,215,.82)';
+    ctx.fillText(note, nx + nw / 2, FY0 + 23);
+    if (progress >= 0){
+      ctx.fillStyle = 'rgba(255,200,87,.20)';
+      ctx.fillRect(nx + 8, FY0 + 33, nw - 16, 3);
+      ctx.fillStyle = '#ffc857';
+      ctx.fillRect(nx + 8, FY0 + 33, (nw - 16) * progress, 3);
+    }
+  }
+
+  /* 基区扩展：标出冶金结与有效基区边界 */
+  if (MODES[modeKey].a2fix != null){
+    var xj = xpx(DEV.xBC);
+    ctx.strokeStyle = 'rgba(255,138,114,.6)'; ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(xj, FY0); ctx.lineTo(xj, FY0 + FH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ffa994';
+    ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('冶金结', xj, FY0 + FH - 8);
+    ctx.textAlign = 'left';
+    ctx.fillText('有效基区 →', xj + 6, FY0 + 34);
+  }
+
+  /* 器件外框 */
+  ctx.strokeStyle = 'rgba(120,160,200,.22)'; ctx.lineWidth = 1;
+  ctx.strokeRect(xpx(0), FY0, xpx(DEV.Lx) - xpx(0), FH);
+
+  /* 动作标注带 */
+  drawLane(m);
+
+  /* 坐标轴 */
+  ctx.strokeStyle = '#2b3c4d'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(xpx(0), AXIS); ctx.lineTo(xpx(DEV.Lx), AXIS); ctx.stroke();
+  ctx.fillStyle = '#55697c'; ctx.font = '12px "SFMono-Regular",Consolas,monospace';
+  ctx.textAlign = 'center';
+  for (i = 0; i <= 5; i++){
+    var tx = xpx(i);
+    ctx.beginPath(); ctx.moveTo(tx, AXIS); ctx.lineTo(tx, AXIS + 4); ctx.stroke();
+    ctx.fillText(i, tx, AXIS + 17);
+  }
+  ctx.textAlign = 'left';
+  ctx.fillText('x (μm)', xpx(DEV.Lx) + 6, AXIS + 17);
+
+  /* 结标签 */
+  ctx.textAlign = 'center';
+  ctx.font = '600 12.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = '#9fb4c6';
+  var cfgD = MODES[modeKey];
+  var tag1 = cfgD.VBE > 0.1 ? 'EB 结 · 正偏' : (cfgD.VBE < -0.1 ? 'EB 结 · 反偏' : 'EB 结 · 平衡');
+  var tag2 = cfgD.VCB > 0.1 ? 'BC 结 · 反偏' : 'BC 结 · 平衡';
+  ctx.fillText(tag1, xE, 580);
+  ctx.fillText(tag2, xC, 580);
+  ctx.font = '11.5px "SFMono-Regular",Consolas,monospace';
+  ctx.fillStyle = '#5f7186';
+  ctx.fillText('W ' + m.W1.toFixed(3) + ' μm', xE, 598);
+  ctx.fillText('W ' + m.W2.toFixed(3) + ' μm', xC, 598);
+
+  /* 外部电路 */
+  drawCircuit(m);
+
+  /* 电场与电流密度剖面（独立画布，随主图同步刷新） */
+  drawProfiles();
+}
+
+function drawHeader(x0, x1, name, color, tint, dop, major, minor){
+  var cx = (xpx(x0) + xpx(x1)) / 2;
+  var w = xpx(x1) - xpx(x0);
+  ctx.fillStyle = tint;
+  ctx.fillRect(xpx(x0), HD0, w, HD1 - HD0);
+  ctx.fillStyle = color;
+  ctx.fillRect(xpx(x0), HD0, w, 2);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  ctx.font = '700 16px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(name, cx, HD0 + 22);
+  ctx.fillStyle = '#9db1c3';
+  ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(dop, cx, HD0 + 42);
+  ctx.fillStyle = '#8397aa';
+  ctx.fillText(major, cx, HD0 + 60);
+  ctx.fillStyle = '#65788a';
+  ctx.fillText(minor, cx, HD0 + 78);
+}
+
+function drawLane(m){
+  var L = ({
+    fwd:   ['① 越过势垒注入', '② 基区扩散 →', '③ 强场扫出 →'],
+    rev:   ['① 势垒阻挡', '② 无净输运', '③ 产生电流 →'],
+    crowd: ['① 挤向边缘注入', '② 边缘走得更快 →', '③ 强场扫出 →'],
+    kirk:  ['① 注入', '② 基区变宽，走得更慢 →', '③ 收集变慢'],
+    early: ['① 注入', '② 基区变窄，走得更快 →', '③ 收集加快'],
+    punch: ['① 势垒消失', '② 无中性基区', '③ 直接穿过 →']
+  })[modeKey] || ['① 产生＝复合', '② 无净输运', '③ 平衡'];
+  var items = [
+    { x: 238, t: L[0], c: '#7cc0ff', w: 110 },
+    { x: 352, t: L[1], c: '#ffa994', w: 132 },
+    { x: 524, t: L[2], c: '#ffc857', w: 120 }
+  ];
+  ctx.font = '12.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'center';
+  for (var i = 0; i < items.length; i++){
+    var it = items[i];
+    ctx.fillStyle = 'rgba(255,255,255,.028)';
+    roundRect(it.x - it.w / 2, LANE - 13, it.w, 23, 11.5);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(120,160,200,.16)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = it.c;
+    ctx.fillText(it.t, it.x, LANE + 3);
+  }
+}
+
+/* 支路电流：正向时由注入与复合直接给出，反向时由产生电流给出 */
+function branchCurrents(){
+  var cfg = MODES[modeKey];
+  var holeRate = injRate > 0 ? injRate / 25 : 0;
+  var IE, IB, IC;
+  if (emaInj > 1){
+    IB = holeRate + emaRecBase;      // 基极电流 = 反向注入到发射区的空穴 + 基区复合
+    IE = emaInj + holeRate;
+    IC = IE - IB;
+  } else {
+    IC = emaColl;                    // 无注入：集电极电流即耗尽区产生电流
+    IE = 0;
+    IB = -IC;                        // 由基极流出（空穴）
+  }
+  return { IE: IE, IB: IB, IC: IC };
+}
+
+/* ---------- 外部电路 ---------- */
+var phE = 0, phB = 0, phC = 0;
+
+function drawCircuit(m){
+  var xE = xpx(0.5), xB = xpx(1.8), xC = xpx(3.8);
+  var yDev = HD0, yGnd = 46, L = yDev - yGnd;
+  var cfg = MODES[modeKey];
+  var vB = curVBE, vC = curVBE + curVCB;
+
+  function sgn(v){
+    if (Math.abs(v) < 0.005) return '0';
+    return (v > 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+  }
+
+  /* 导线 */
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#4d6376';
+  ctx.beginPath();
+  ctx.moveTo(xE, yDev); ctx.lineTo(xE, yGnd);
+  ctx.moveTo(xB, yDev); ctx.lineTo(xB, yGnd);
+  ctx.moveTo(xC, yDev); ctx.lineTo(xC, yGnd);
+  ctx.stroke();
+
+  /* 电流：流动点，密度与速度正比于支路电流 */
+  var bc = branchCurrents();
+  var curE = bc.IE, curB = bc.IB, curC = bc.IC;
+  function dots(x, fromGround, phase, rate){
+    if (Math.abs(rate) < 0.8) return;
+    var sp = Math.min(1, Math.abs(rate) / 55);
+    ctx.fillStyle = 'rgba(255,203,102,' + (0.28 + 0.55 * sp).toFixed(2) + ')';
+    for (var i = 0; i < 5; i++){
+      var d = ((phase + i * L / 5) % L + L) % L;
+      var y = fromGround ? yGnd + d : yDev - d;
+      if (y < yGnd + 2 || y > yDev - 2) continue;
+      ctx.beginPath(); ctx.arc(x, y, 1.7 + 1.2 * sp, 0, 6.283); ctx.fill();
+    }
+  }
+  dots(xE, false, phE, curE);
+  dots(xB, true, phB, curB);
+  dots(xC, true, phC, curC);
+
+  /* 端子触头 */
+  ctx.fillStyle = '#7d93a8';
+  ctx.fillRect(xE - 11, yDev - 4, 22, 4);
+  ctx.fillRect(xB - 11, yDev - 4, 22, 4);
+  ctx.fillRect(xC - 11, yDev - 4, 22, 4);
+
+  /* 接地符号 */
+  function ground(x, y){
+    ctx.strokeStyle = '#7d93a8'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x - 11, y); ctx.lineTo(x + 11, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 7, y - 5); ctx.lineTo(x + 7, y - 5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 3, y - 10); ctx.lineTo(x + 3, y - 10); ctx.stroke();
+  }
+  ground(xE, yGnd); ground(xB, yGnd); ground(xC, yGnd);
+
+  /* 电池 */
+  function battery(x, y, label){
+    ctx.fillStyle = '#0a1017';
+    ctx.fillRect(x - 17, y - 13, 34, 26);
+    ctx.strokeStyle = '#9fb4c6';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(x - 12, y + 5); ctx.lineTo(x + 12, y + 5); ctx.stroke();
+    ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(x - 6, y - 4); ctx.lineTo(x + 6, y - 4); ctx.stroke();
+    ctx.fillStyle = '#9fb4c6';
+    ctx.font = '10.5px "SFMono-Regular",Consolas,monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('+', x - 15, y + 9);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#93a7b9';
+    ctx.font = '11.5px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(label, x + 19, y + 4);
+  }
+  battery(xB, 90, 'V_BE = ' + vB.toFixed(2) + ' V');
+  battery(xC, 90, 'V_CB = ' + cfg.VCB.toFixed(2) + ' V');
+
+  /* 电流表 */
+  function ammeter(x, y){
+    ctx.fillStyle = '#0a1017';
+    ctx.beginPath(); ctx.arc(x, y, 9.5, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = '#9fb4c6'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x, y, 9.5, 0, 6.283); ctx.stroke();
+    ctx.fillStyle = '#c2d0dd';
+    ctx.font = '600 11px "SFMono-Regular",Consolas,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('A', x, y + 4);
+  }
+  ammeter(xC, 118);
+
+  /* 支路电流标注（换算成电流密度 A/cm²） */
+  function curLabel(x, name, val, up){
+    ctx.textAlign = 'right';
+    ctx.font = '11px "SFMono-Regular",Consolas,monospace';
+    ctx.fillStyle = 'rgba(255,203,102,.8)';
+    ctx.fillText(name + ' ' + (Math.abs(val) * A_PER_PARTICLE).toFixed(1), x - 16, 60);
+    ctx.fillStyle = 'rgba(255,203,102,.45)';
+    ctx.font = '10px "SFMono-Regular",Consolas,monospace';
+    ctx.fillText(up ? '↑' : '↓', x - 16, 72);
+  }
+  curLabel(xE, 'I_E', curE, curE >= 0);
+  curLabel(xB, 'I_B', curB, curB < 0);
+  curLabel(xC, 'I_C', curC, curC < 0);
+
+  /* 节点电压说明 */
+  ctx.textAlign = 'left';
+  ctx.font = '11.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = '#6d8296';
+  ctx.fillText('E ' + sgn(0) + ' V　·　B ' + sgn(vB) + ' V　·　C ' + sgn(vC) +
+               ' V　　（经电源接地；黄色流动点＝常规电流；I 的单位为 A/cm²）', 60, 20);
+}
+
+
+var lastT = 0, collPrev = 0, rateColl = 0;
+
+function updateReadOuts(){
+  var inBase = 0, i, p;
+  for (i = 0; i < parts.length; i++){
+    p = parts[i];
+    if (p.alive && p.role === 'injB') inBase++;
+  }
+  var el;
+  el = document.getElementById('npnTransit');
+  if (el) el.textContent = String(inBase);
+
+  el = document.getElementById('npnRatio');
+  if (el) el.textContent = injTotal + ' / ' + recTotal;
+
+  el = document.getElementById('npnAlpha');
+  if (el){
+    /* 基区输运系数只统计已"结案"的电子：被收走的 vs 复合掉的，
+       不含仍在途中的那部分，否则瞬态会把它压低 */
+    var done = collInj + recBase;
+    el.textContent = done > 12 ? (collInj / done * 100).toFixed(1) + '%' : '—';
+  }
+
+  el = document.getElementById('npnJ');
+  if (el){
+    if (modeKey === 'kirk'){
+      el.innerHTML = curJrel.toFixed(2) + ' <small>J/J<sub>K</sub></small>';
+    } else {
+      el.innerHTML = curJ < 0.05
+        ? '≈ 0 <small>A/cm²</small>'
+        : curJ.toFixed(1) + ' <small>A/cm²</small>';
+    }
+  }
+
+  el = document.getElementById('npnParams');
+  if (el) el.textContent = (model.b1x - model.a1).toFixed(3) + ' / ' + (model.b2x - model.a2).toFixed(3) + ' μm';
+}
+
+/* ---------- 电场 / 电流密度剖面 ---------- */
+var pcv = document.getElementById('npnProfile');
+var pctx = pcv ? pcv.getContext('2d') : null;
+var PW = 1000, PH = 336;
+if (pcv){
+  pcv.width = PW * DPR; pcv.height = PH * DPR;
+  pctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+/* ---------- 电场 / 电流密度剖面（全部解析计算） ---------- */
+
+/* 理论电流密度分布（相对总电流 J 归一）
+   总电流 J = J_n + J_p 处处相等；空穴电流只在发射结附近存在：
+   发射区一侧由接触处的 0 增长到结边的 J_p⁻，基区一侧被复合消耗回 0。
+   本模型取空穴注入比 1/25（与粒子模型的注入比、外部电路的 I_B 一致）。 */
+var JP_RATIO = 1 / 25;
+function jProfileAt(x){
+  var m = model;
+  var jpPeak = -JP_RATIO / (1 + JP_RATIO);      // 相对总电流，负号＝向左流
+  var jp;
+  if (x <= m.b1x){
+    jp = jpPeak * Math.exp((x - m.b1x) / 35);   // L_p ≈ 35 μm，向接触端缓慢衰减
+  } else if (x < m.a2){
+    jp = jpPeak * (1 - (x - m.b1x) / Math.max(m.a2 - m.b1x, 1e-3));
+  } else {
+    jp = 0;
+  }
+  return { jp: jp, jn: 1 - jp };                 // J = J_n + J_p = 1
+}
+
+/* 载流子浓度分布（log 坐标用）：中性区取掺杂/本征值，
+   基区少子取线性短基区分布，结边注入 n_B1 = (n_i²/N_A)e^{V_BE/V_T}，
+   两个耗尽区内按玻尔兹曼关系在对数坐标上线性过渡。 */
+function concAt(x){
+  var m = model, ni2 = 1e20;
+  var nE = 1e18, pE = ni2 / 1e18;          // 发射区 n⁺
+  var pB = 1e16;                            // 基区多子
+  var nB1 = (ni2 / 1e16) * Math.exp(curVBE / 0.025852);
+  var nC = 1e16, pC = ni2 / 1e16;          // 集电区
+  /* 集电结耗尽区里有电流时，载流子浓度近似恒定 n ≈ J/(q·v_sat)。
+     用 J/J_K 表达：J_K = q·v_sat·N_C，所以 n_dep = N_C·(J/J_K)。
+     Kirk 模式恰好就是在把这个比值推到 1 附近。 */
+  var jrel = (modeKey === 'kirk') ? curJrel : (curJ / 16000);
+  var nDep = Math.min(3e16, Math.max(1e3, 1e16 * jrel));
+  var n, p;
+  if (x <= m.a1){ n = nE; p = pE; }
+  else if (x < m.b1x){
+    var t = (x - m.a1) / Math.max(m.b1x - m.a1, 1e-4);
+    n = nE * Math.pow(nB1 / nE, t);
+    p = pE * Math.pow(pB / pE, t);
+  } else if (x < m.a2){
+    var u = (x - m.b1x) / Math.max(m.a2 - m.b1x, 1e-3);
+    n = nB1 * (1 - u) + nDep * u;           // 短基区线性少子分布，到集电结边接到 n_dep
+    p = pB;
+  } else if (x < m.b2x){
+    n = nDep;                               // 有电流时耗尽区内近似平直，不是 Boltzmann 斜坡
+    p = Math.max(ni2 / nDep, 1e2);
+  } else { n = nC; p = pC; }
+  return [Math.max(n, 1e2), Math.max(p, 1e2)];
+}
+
+function drawProfiles(){
+  if (!pctx) return;
+  var x0 = PX0, x1 = PX0 + DEV.Lx * PU;
+  var mulX = (x1 - x0) / DEV.Lx;
+  var A0 = 34, A1 = 96, B0 = 122, B1 = 184, C0 = 212, C1 = 274;
+  var i, x, px, py;
+  var m = model;
+
+  pctx.clearRect(0, 0, PW, PH);
+  pctx.fillStyle = '#080e14';
+  pctx.fillRect(0, 0, PW, PH);
+  pctx.textBaseline = 'alphabetic';
+
+  /* ===== 区域底色与边界（两张图共用） ===== */
+  var deps = [[m.a1, m.b1x], [m.a2, m.b2x]];
+  pctx.fillStyle = 'rgba(120,170,220,.055)';
+  for (i = 0; i < deps.length; i++){
+    var dx0 = x0 + deps[i][0] * mulX, dx1 = x0 + deps[i][1] * mulX;
+    if (dx1 > dx0 + 0.5) pctx.fillRect(dx0, A0 - 4, dx1 - dx0, C1 - A0 + 8);
+  }
+  pctx.strokeStyle = 'rgba(120,170,220,.30)'; pctx.lineWidth = 1;
+  pctx.setLineDash([3, 4]);
+  for (i = 0; i < deps.length; i++){
+    var e0 = x0 + deps[i][0] * mulX, e1 = x0 + deps[i][1] * mulX;
+    pctx.beginPath(); pctx.moveTo(e0, A0 - 4); pctx.lineTo(e0, C1 + 5); pctx.stroke();
+    pctx.beginPath(); pctx.moveTo(e1, A0 - 4); pctx.lineTo(e1, C1 + 5); pctx.stroke();
+  }
+  pctx.setLineDash([]);
+
+  /* 区域名 */
+  var zones = [[0, m.a1, '发射区'], [m.b1x, m.a2, '基区'], [m.b2x, DEV.Lx, '集电区']];
+  pctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.textAlign = 'center';
+  pctx.fillStyle = '#5f7186';
+  for (i = 0; i < zones.length; i++){
+    if (zones[i][1] - zones[i][0] < 0.05) continue;   // 穿通时基区已经不存在
+    var zc = (x0 + zones[i][0] * mulX + x0 + zones[i][1] * mulX) / 2;
+    pctx.fillText(zones[i][2], zc, 12);
+  }
+
+  /* ===== 电场强度 ===== */
+  var Emax = 0, N = 260;
+  for (i = 0; i <= N; i++){ x = DEV.Lx * i / N; Emax = Math.max(Emax, Math.abs(model.grad(x))); }
+  Emax = Math.max(Emax, 0.5);
+  var yz = (A0 + A1) / 2, half = (A1 - A0) / 2 - 4;
+
+  pctx.strokeStyle = '#17232f'; pctx.lineWidth = 1;
+  pctx.beginPath(); pctx.moveTo(x0, yz); pctx.lineTo(x1, yz); pctx.stroke();
+
+  pctx.beginPath();
+  for (i = 0; i <= N; i++){
+    x = DEV.Lx * i / N;
+    px = x0 + x * mulX;
+    py = yz - (model.grad(x) / Emax) * half;
+    if (i) pctx.lineTo(px, py); else pctx.moveTo(px, py);
+  }
+  pctx.strokeStyle = '#ffc857'; pctx.lineWidth = 2; pctx.lineJoin = 'round';
+  pctx.stroke();
+
+  pctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.textAlign = 'left';
+  pctx.fillStyle = '#93a7b9';
+  pctx.fillText('电场强度 E(x)', x0, 26);
+  pctx.textAlign = 'right';
+  pctx.fillStyle = '#ffc857';
+  pctx.font = '11px "SFMono-Regular",Consolas,monospace';
+  pctx.fillText('峰值 ' + (Emax * 10).toFixed(0) + ' kV/cm', x1, 26);
+
+  /* ===== 电流密度（解析解，相对总电流归一） ===== */
+  var jpAmp = 6;                       // 空穴电流按 ×6 绘制，否则只有 4% 看不见
+  var vTop = 1.12, vBot = -0.26;
+  var jy = function(v){ return B1 - (v - vBot) / (vTop - vBot) * (B1 - B0); };
+
+  pctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.textAlign = 'left';
+  pctx.fillStyle = '#93a7b9';
+  pctx.fillText('电流密度 J(x)　·　J_n ≈ J总，差的那 4% 就是基极电流', x0, 116);
+  pctx.font = '11px "SFMono-Regular",Consolas,monospace';
+  pctx.fillStyle = '#5f7186';
+  pctx.textAlign = 'right';
+
+  if (curJ > 0.05){
+    /* 零线与总电流线 */
+    pctx.strokeStyle = '#17232f'; pctx.lineWidth = 1;
+    pctx.beginPath(); pctx.moveTo(x0, jy(0)); pctx.lineTo(x1, jy(0)); pctx.stroke();
+    pctx.setLineDash([5, 4]);
+    pctx.strokeStyle = 'rgba(220,235,245,.28)';
+    pctx.beginPath(); pctx.moveTo(x0, jy(1)); pctx.lineTo(x1, jy(1)); pctx.stroke();
+    pctx.setLineDash([]);
+    pctx.fillStyle = '#5f7186';
+    pctx.fillText('J = ' + curJ.toFixed(1) + ' A/cm²', x1 - 2, jy(1) - 5);
+
+    /* 电子电流 J_n：处处约等于总电流，只在发射结处略高 */
+    var N2 = 260;
+    pctx.beginPath();
+    for (i = 0; i <= N2; i++){
+      x = DEV.Lx * i / N2;
+      var jn = jProfileAt(x).jn;
+      px = x0 + x * mulX;
+      py = jy(jn);
+      if (i) pctx.lineTo(px, py); else pctx.moveTo(px, py);
+    }
+    pctx.strokeStyle = '#5aa9ff'; pctx.lineWidth = 2.2; pctx.stroke();
+
+    /* 空穴电流 J_p：全宽绘制（集电区为 0），按 ×6 放大 */
+    pctx.beginPath();
+    for (i = 0; i <= N2; i++){
+      x = DEV.Lx * i / N2;
+      var jp = jProfileAt(x).jp;
+      px = x0 + x * mulX;
+      py = jy(jp * jpAmp);
+      if (i) pctx.lineTo(px, py); else pctx.moveTo(px, py);
+    }
+    pctx.strokeStyle = '#ff8a72'; pctx.lineWidth = 2; pctx.stroke();
+  } else {
+    pctx.strokeStyle = '#17232f'; pctx.lineWidth = 1;
+    pctx.beginPath(); pctx.moveTo(x0, jy(0)); pctx.lineTo(x1, jy(0)); pctx.stroke();
+    pctx.fillStyle = '#5f7186';
+    pctx.textAlign = 'left';
+    pctx.fillText('J = 0（无净电流，稳态下 J_n + J_p 处处相消）', x0 + 10, jy(0) - 10);
+  }
+
+  /* ===== 载流子浓度（线性轴，按结边少子浓度标定） =====
+     用对数轴会把"线性少子分布"画成先平后崖，看不出 dn/dx —— 而 dn/dx 就是扩散电流。
+     改线性轴后基区是一条真正的斜线；多子浓度高出量程，在顶边截断。 */
+  var SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  function sciU(v){
+    if (v < 1e4) return String(Math.round(v));
+    var e = Math.floor(Math.log(v) / Math.LN10);
+    var ms = (v / Math.pow(10, e)).toFixed(1).replace(/\.0$/, '');
+    return ms + '×10' + String(e).split('').map(function(d){ return SUP[+d]; }).join('');
+  }
+  var nB1v = (1e20 / 1e16) * Math.exp(curVBE / 0.025852);
+  var cMax = Math.max(nB1v, 1e10) * 1.08;
+  var cy = function(v){ return C1 - Math.min(v, cMax) / cMax * (C1 - C0); };
+
+  pctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.textAlign = 'left';
+  pctx.fillStyle = '#93a7b9';
+  pctx.fillText('载流子浓度（线性轴）　n(x) 蓝　·　p(x) 橙', x0, 206);
+  pctx.textAlign = 'right';
+  pctx.fillStyle = '#5f7186';
+  pctx.font = '10px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.fillText('多子浓度超出量程，按顶边截断', x1, 206);
+
+  [0, 0.5, 1].forEach(function(f){
+    var gy = cy(f * cMax);
+    pctx.strokeStyle = f === 0 ? '#243545' : '#17232f'; pctx.lineWidth = 1;
+    pctx.beginPath(); pctx.moveTo(x0, gy); pctx.lineTo(x1, gy); pctx.stroke();
+    pctx.fillStyle = '#55697c';
+    pctx.font = '9.5px "SFMono-Regular",Consolas,monospace';
+    pctx.textAlign = 'right';
+    pctx.fillText(f === 0 ? '0' : sciU(f * cMax), x0 - 8, gy + 3);
+  });
+
+  var N3 = 260;
+  /* 空穴浓度 */
+  pctx.beginPath();
+  for (i = 0; i <= N3; i++){
+    x = DEV.Lx * i / N3;
+    px = x0 + x * mulX;
+    py = cy(concAt(x)[1]);
+    if (i) pctx.lineTo(px, py); else pctx.moveTo(px, py);
+  }
+  pctx.strokeStyle = '#ff8a72'; pctx.lineWidth = 2; pctx.stroke();
+  /* 电子浓度 */
+  pctx.beginPath();
+  for (i = 0; i <= N3; i++){
+    x = DEV.Lx * i / N3;
+    px = x0 + x * mulX;
+    py = cy(concAt(x)[0]);
+    if (i) pctx.lineTo(px, py); else pctx.moveTo(px, py);
+  }
+  pctx.strokeStyle = '#5aa9ff'; pctx.lineWidth = 2; pctx.stroke();
+
+  /* ===== 坐标轴 ===== */
+  pctx.strokeStyle = '#2b3c4d'; pctx.lineWidth = 1;
+  pctx.beginPath(); pctx.moveTo(x0, C1 + 6); pctx.lineTo(x1, C1 + 6); pctx.stroke();
+  pctx.fillStyle = '#55697c';
+  pctx.font = '11px "SFMono-Regular",Consolas,monospace';
+  pctx.textAlign = 'center';
+  for (i = 0; i <= 5; i++){
+    var tx = x0 + i * mulX;
+    pctx.beginPath(); pctx.moveTo(tx, C1 + 6); pctx.lineTo(tx, C1 + 10); pctx.stroke();
+    pctx.fillText(i, tx, C1 + 23);
+  }
+  pctx.textAlign = 'left';
+  pctx.fillText('x (μm)', x1 + 8, B1 + 23);
+
+  /* ===== 图例 ===== */
+  var lg = [
+    { c: '#ffc857', dash: null, t: '电场 E(x)', x: x0 },
+    { c: '#5aa9ff', dash: null, t: '电子电流 J_n(x)', x: x0 + 190 },
+    { c: '#ff8a72', dash: null, t: '空穴电流 J_p(x)（放大 6 倍）', x: x0 + 400 },
+    { c: 'rgba(220,235,245,.45)', dash: [5, 4], t: '总电流 J（处处相等）', x: x0 + 670 }
+  ];
+  var ly = 316;
+  pctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  pctx.textAlign = 'left';
+  for (i = 0; i < lg.length; i++){
+    pctx.strokeStyle = lg[i].c; pctx.lineWidth = 2.2;
+    if (lg[i].dash) pctx.setLineDash(lg[i].dash);
+    pctx.beginPath(); pctx.moveTo(lg[i].x, ly); pctx.lineTo(lg[i].x + 24, ly); pctx.stroke();
+    pctx.setLineDash([]);
+    pctx.fillStyle = '#8b9bab';
+    pctx.fillText(lg[i].t, lg[i].x + 32, ly + 4);
+  }
+}
+
+
+var STEP = 1 / 60, acc = 0, prev = 0, statT = 0;
+
+function loop(now){
+  if (!prev) prev = now;
+  var dtReal = Math.min((now - prev) / 1000, 0.08);
+  prev = now;
+
+  if (running){
+    acc += dtReal;
+    var guard = 0;
+    while (acc >= STEP && guard++ < 5){
+      step(STEP);
+      acc -= STEP;
+    }
+    /* 外部电路的电流流动 */
+    var bc = branchCurrents();
+    phE += bc.IE * 1.35 * dtReal;
+    phC += bc.IC * 1.35 * dtReal;
+    phB += bc.IB * 1.35 * dtReal;
+
+    statT += dtReal;
+    if (statT > 0.4){
+      rateColl = (collTotal - collPrev) / statT;
+      collPrev = collTotal;
+      statT = 0;
+      updateReadOuts();
+    }
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 交互 ---------- */
+var btns = document.querySelectorAll('.npn-modes button[data-mode]');
+Array.prototype.forEach.call(btns, function(b){
+  b.addEventListener('click', function(){
+    var k = b.getAttribute('data-mode');
+    if (!MODES[k] || k === modeKey) return;
+    modeKey = k;
+    Array.prototype.forEach.call(btns, function(o){ o.classList.remove('on'); });
+    b.classList.add('on');
+    /* 效应模式：从驱动量下限起步，自动播一遍，之后可用滑块手动控制 */
+    var dv0 = DRIVERS[k];
+    if (dv0){ driverVal = dv0.min; autoPlay = true; } else { autoPlay = false; }
+    populate();
+    collPrev = 0; rateColl = 0; statT = 0;
+    var hint = document.getElementById('npnHint');
+    if (hint) hint.innerHTML = MODES[k].hint;
+    updateReadOuts();
+  });
+});
+
+var pauseBtn = document.getElementById('npnPause');
+if (pauseBtn){
+  pauseBtn.addEventListener('click', function(){
+    running = !running;
+    pauseBtn.textContent = running ? '暂停' : '继续';
+    pauseBtn.classList.toggle('on', !running);
+    if (!running) prev = 0;
+  });
+}
+
+/* 手动拖动驱动量：接管自动播放，几何实时跟随 */
+var sliderEl = document.getElementById('npnSlider');
+if (sliderEl){
+  sliderEl.addEventListener('input', function(){
+    if (!DRIVERS[modeKey]) return;
+    driverVal = parseFloat(sliderEl.value);
+    autoPlay = false;
+    applyModeState();
+    updateReadOuts();
+  });
+}
+
+/* 离开视口时自动暂停，避免空耗 */
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (e.isIntersecting && !running){ /* 由用户控制，不自动恢复 */ }
+      if (!e.isIntersecting && running){ prev = 0; }
+    });
+  }, { threshold: 0 }).observe(cv);
+}
+
+populate();
+updateReadOuts();
+requestAnimationFrame(loop);
+
+/* 调试接口（便于自动化校验） */
+window.__npn = {
+  step: function(n){ for (var i = 0; i < n; i++) step(STEP); updateReadOuts(); },
+  redraw: function(){ draw(); },
+  eprof: function(n){
+    n = n || 24;
+    var a = [];
+    for (var i = 0; i < n; i++){
+      var x = DEV.Lx * (i + 0.5) / n;
+      a.push(Math.round(model.grad(x) * 10));   // kV/cm
+    }
+    return a;
+  },
+  jprof: function(n){
+    n = n || 20;
+    var a = [];
+    for (var i = 0; i < n; i++){
+      var x = DEV.Lx * (i + 0.5) / n;
+      var r = jProfileAt(x);
+      a.push([Math.round(r.jn * 100) / 100, Math.round(r.jp * 1000) / 1000]);
+    }
+    return a;
+  },
+  bhist: function(n, x0, x1){
+    n = n || 12; x0 = x0 == null ? model.b1x : x0; x1 = x1 == null ? model.a2 : x1;
+    var b = [], k;
+    for (k = 0; k < n; k++) b.push(0);
+    for (var i = 0; i < parts.length; i++){
+      var q = parts[i];
+      if (!q.alive || q.k !== 'h' || q.role !== 'maj' || q.home !== 'B') continue;
+      k = Math.floor((q.x - x0) / (x1 - x0) * n);
+      if (k >= 0 && k < n) b[k]++;
+      else if (k < 0) b[0]++;
+      else b[n - 1]++;
+    }
+    return b;
+  },
+  hist: function(){
+    var b = [], k;
+    for (k = 0; k < 10; k++) b.push([0, 0]);
+    for (var i = 0; i < parts.length; i++){
+      var q = parts[i];
+      if (!q.alive) continue;
+      k = Math.min(9, Math.max(0, Math.floor(q.x / DEV.Lx * 10)));
+      if (q.k === 'e') b[k][0]++; else b[k][1]++;
+    }
+    return b;
+  },
+  state: function(){
+    var e = 0, h = 0, inB = 0;
+    for (var i = 0; i < parts.length; i++){
+      var p = parts[i];
+      if (!p.alive) continue;
+      if (p.k === 'e'){ e++; if (p.role === 'injB') inB++; }
+      else h++;
+    }
+    return { e: e, h: h, inBase: inB, inj: injTotal, coll: collTotal, rec: recTotal,
+             alpha: injTotal ? collTotal / injTotal : 0,
+             W1: model.W1, W2: model.W2, mode: modeKey,
+             vbe: curVBE, vcb: curVCB, vce: curVBE + curVCB,
+             Wbc: model.b2x - model.a2, Wb: Math.max(model.a2 - model.b1x, 0) };
+  },
+  cprof: function(n){
+    n = n || 16;
+    var a = [];
+    for (var i = 0; i < n; i++){
+      var x = DEV.Lx * (i + 0.5) / n;
+      var r = concAt(x);
+      a.push([r[0].toExponential(1), r[1].toExponential(1)]);
+    }
+    return a;
+  }
+};
+
+})();
+/* ================= 转移特性曲线：为什么能放大 ================= */
+(function(){
+"use strict";
+var cv = document.getElementById('gainCanvas');
+if (!cv || !cv.getContext) return;
+var ctx = cv.getContext('2d');
+var CW = 900, CH = 300;
+var DPR = Math.min(window.devicePixelRatio || 1, 2);
+cv.width = CW * DPR; cv.height = CH * DPR;
+ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+var VT = 0.025852, VMIN = 0.46, VMAX = 0.66;
+var X0 = 96, X1 = 772, Y0 = 46, Y1 = 246;
+
+function xpx(v){ return X0 + (v - VMIN) / (VMAX - VMIN) * (X1 - X0); }
+function ypx(r){ r = Math.max(0, Math.min(1, r)); return Y1 - r * (Y1 - Y0); }
+function ratio(v){ return Math.exp((v - VMAX) / VT); }
+
+function draw(V){
+  var i, x, y;
+
+  ctx.clearRect(0, 0, CW, CH);
+  ctx.fillStyle = '#0a1016';
+  ctx.fillRect(0, 0, CW, CH);
+
+  /* 网格 */
+  ctx.strokeStyle = '#17232f'; ctx.lineWidth = 1;
+  for (i = 0; i <= 4; i++){
+    y = Y0 + (Y1 - Y0) * i / 4;
+    ctx.beginPath(); ctx.moveTo(X0, y); ctx.lineTo(X1, y); ctx.stroke();
+  }
+  ctx.font = '11px "SFMono-Regular",Consolas,monospace';
+  ctx.fillStyle = '#55697c';
+  ctx.textAlign = 'right';
+  for (i = 0; i <= 4; i++){
+    y = Y0 + (Y1 - Y0) * i / 4;
+    ctx.fillText((1 - i / 4).toFixed(2), X0 - 12, y + 4);
+  }
+  ctx.textAlign = 'center';
+  for (i = 0; i <= 4; i++){
+    x = X0 + (X1 - X0) * i / 4;
+    var vv = VMIN + (VMAX - VMIN) * i / 4;
+    ctx.beginPath(); ctx.moveTo(x, Y1); ctx.lineTo(x, Y1 + 4); ctx.stroke();
+    ctx.fillText(vv.toFixed(2), x, Y1 + 19);
+  }
+
+  /* 坐标轴 */
+  ctx.strokeStyle = '#2b3c4d'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X0, Y0 - 4); ctx.lineTo(X0, Y1); ctx.lineTo(X1, Y1); ctx.stroke();
+
+  /* 十毫伏区间着色 */
+  var V2 = Math.min(V + 0.01, VMAX);
+  var r1 = ratio(V), r2 = ratio(V2);
+  ctx.beginPath();
+  ctx.moveTo(xpx(V), Y1);
+  ctx.lineTo(xpx(V), ypx(r1));
+  for (i = 0; i <= 24; i++){
+    var u = V + (V2 - V) * i / 24;
+    ctx.lineTo(xpx(u), ypx(ratio(u)));
+  }
+  ctx.lineTo(xpx(V2), Y1);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,200,87,.10)';
+  ctx.fill();
+
+  /* 曲线 */
+  ctx.beginPath();
+  for (i = 0; i <= 240; i++){
+    var v = VMIN + (VMAX - VMIN) * i / 240;
+    var xx = xpx(v), yy = ypx(ratio(v));
+    if (i) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy);
+  }
+  ctx.strokeStyle = '#5aa9ff'; ctx.lineWidth = 2.6; ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  /* 切线 */
+  var slope = (r1 / VT) * (Y1 - Y0) / ((X1 - X0) / (VMAX - VMIN));
+  var dv = 0.016;
+  ctx.beginPath();
+  ctx.moveTo(xpx(V - dv), ypx(r1) + slope * (xpx(V - dv) - xpx(V)));
+  ctx.lineTo(xpx(V + dv), ypx(r1) + slope * (xpx(V + dv) - xpx(V)));
+  ctx.strokeStyle = 'rgba(255,200,87,.55)'; ctx.lineWidth = 1.4;
+  ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]);
+
+  /* 工作点 */
+  ctx.strokeStyle = 'rgba(79,195,247,.35)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+  ctx.beginPath(); ctx.moveTo(xpx(V), Y1); ctx.lineTo(xpx(V), ypx(r1)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X0, ypx(r1)); ctx.lineTo(xpx(V), ypx(r1)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xpx(V2), Y1); ctx.lineTo(xpx(V2), ypx(r2)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#4fc3f7';
+  ctx.beginPath(); ctx.arc(xpx(V), ypx(r1), 5, 0, 6.2832); ctx.fill();
+  ctx.fillStyle = '#ffc857';
+  ctx.beginPath(); ctx.arc(xpx(V2), ypx(r2), 4.2, 0, 6.2832); ctx.fill();
+  ctx.strokeStyle = '#ffc857'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(xpx(V2), ypx(r2), 7, 0, 6.2832); ctx.stroke();
+
+  /* 标注 */
+  ctx.font = '11.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#93a7b9';
+  ctx.fillText('I_C / I_C,max', X0, Y0 - 12);
+  ctx.fillStyle = '#5f7186';
+  ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('切线斜率 = 跨导 g_m = I_C / V_T', X0 + 12, Y0 + 16);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#93a7b9';
+  ctx.font = '11.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('V_BE (V)', X1, Y1 + 38);
+
+  /* 十毫伏标注 */
+  var labY = Math.max(Y0 + 16, ypx(r2) - 16);
+  ctx.strokeStyle = '#ffc857'; ctx.fillStyle = '#ffc857'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(xpx(V) + 3, labY); ctx.lineTo(xpx(V2) - 3, labY); ctx.stroke();
+  ctx.textAlign = 'left';
+  ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('10 mV → ×1.47', xpx(V2) + 12, labY + 4);
+}
+
+function sci(x){
+  if (!isFinite(x) || x === 0) return '0';
+  var e = Math.floor(Math.log10(x));
+  var m = x / Math.pow(10, e);
+  var ms = m.toFixed(1).replace(/\.0$/, '');
+  if (e === 0) return ms;
+  return ms + '×10<sup>' + (e < 0 ? '−' + Math.abs(e) : e) + '</sup>';
+}
+
+var sl = document.getElementById('vbeSlider');
+function update(){
+  var V = parseFloat(sl.value);
+  draw(V);
+  var out = document.getElementById('vbeOut');
+  if (out) out.textContent = V.toFixed(3);
+  var g = function(id){ return document.getElementById(id); };
+  if (g('gRatio')) g('gRatio').innerHTML = sci(ratio(V));
+  if (g('gInj')) g('gInj').innerHTML = sci(1e4 * Math.exp(V / VT)) + ' <small>cm⁻³</small>';
+  if (g('gBar')) g('gBar').innerHTML = (0.8334 - V).toFixed(3) + ' <small>eV</small>';
+  if (g('gSens')) g('gSens').textContent = '×' + Math.exp(0.01 / VT).toFixed(2);
+}
+if (sl){
+  sl.addEventListener('input', update);
+  update();
+}
+})();
+
+/* 遵循系统的"减少动态效果"设置：暂停 SVG 内的 SMIL 动画 */
+(function(){
+  if (!window.matchMedia) return;
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function apply(){
+    if (!mq.matches) return;
+    Array.prototype.forEach.call(document.querySelectorAll('svg'), function(s){
+      if (s.pauseAnimations) s.pauseAnimations();
+    });
+  }
+  apply();
+  if (mq.addEventListener) mq.addEventListener('change', apply);
+})();
+</script>
+</body>
+</html>
